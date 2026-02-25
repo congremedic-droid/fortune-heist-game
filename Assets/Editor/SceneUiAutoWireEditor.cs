@@ -2,6 +2,7 @@
 using System.IO;
 using UnityEditor;
 using UnityEditor.Events;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -12,6 +13,16 @@ namespace FortuneHeist.Editor
     {
         private const string PrefabFolder = "Assets/Prefabs";
         private const string RowButtonPrefabPath = PrefabFolder + "/RowButton.prefab";
+        private const string ScenePath = "Assets/Scenes/GameScene.unity";
+
+        [MenuItem("FortuneHeist/Setup/Bootstrap Everything")]
+        public static void BootstrapEverything()
+        {
+            SceneSetupEditor.EnsureSceneAndBuildSettings();
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            AutoWireSceneUi();
+            ValidateSceneSetup();
+        }
 
         [MenuItem("FortuneHeist/Setup/Auto Wire Scene UI")]
         public static void AutoWireSceneUi()
@@ -105,6 +116,63 @@ namespace FortuneHeist.Editor
             UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
 
             Debug.Log("[FortuneHeist] Auto Wire Scene UI completed. Press Play.");
+        }
+
+        [MenuItem("FortuneHeist/Setup/Validate Scene Setup")]
+        public static void ValidateSceneSetup()
+        {
+            GameplayController gameplayController = Object.FindObjectOfType<GameplayController>();
+            BuildingSystem buildingSystem = Object.FindObjectOfType<BuildingSystem>();
+            GameplayHudPresenter hudPresenter = Object.FindObjectOfType<GameplayHudPresenter>();
+            FtueOverlayPresenter ftueOverlayPresenter = Object.FindObjectOfType<FtueOverlayPresenter>();
+            DebugMenu debugMenu = Object.FindObjectOfType<DebugMenu>();
+
+            int issues = 0;
+            issues += ValidateSerializedRefs(gameplayController, "GameplayController");
+            issues += ValidateSerializedRefs(buildingSystem, "BuildingSystem");
+            issues += ValidateSerializedRefs(hudPresenter, "GameplayHudPresenter");
+            issues += ValidateSerializedRefs(ftueOverlayPresenter, "FtueOverlayPresenter");
+            issues += ValidateSerializedRefs(debugMenu, "DebugMenu");
+
+            if (issues == 0)
+            {
+                Debug.Log("[FortuneHeist] Scene validation passed. All required references are assigned.");
+            }
+            else
+            {
+                Debug.LogWarning($"[FortuneHeist] Scene validation found {issues} missing references. Run Bootstrap Everything or Auto Wire Scene UI.");
+            }
+        }
+
+        private static int ValidateSerializedRefs(Object target, string label)
+        {
+            if (target == null)
+            {
+                Debug.LogWarning($"[FortuneHeist] {label} is missing in scene.");
+                return 1;
+            }
+
+            SerializedObject so = new SerializedObject(target);
+            SerializedProperty it = so.GetIterator();
+            int missing = 0;
+            bool enterChildren = true;
+
+            while (it.NextVisible(enterChildren))
+            {
+                enterChildren = false;
+                if (it.name == "m_Script")
+                {
+                    continue;
+                }
+
+                if (it.propertyType == SerializedPropertyType.ObjectReference && it.objectReferenceValue == null)
+                {
+                    Debug.LogWarning($"[FortuneHeist] {label}.{it.name} is not assigned.");
+                    missing++;
+                }
+            }
+
+            return missing;
         }
 
         private static Canvas EnsureCanvas()

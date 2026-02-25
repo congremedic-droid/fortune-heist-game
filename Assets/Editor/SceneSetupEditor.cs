@@ -15,6 +15,11 @@ namespace FortuneHeist.Editor
 
         static SceneSetupEditor()
         {
+            EnsureSceneAndBuildSettings();
+        }
+
+        public static void EnsureSceneAndBuildSettings()
+        {
             EnsureGameSceneExists();
             EnsureBuildSettingsDefaultScene();
         }

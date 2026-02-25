@@ -25,9 +25,13 @@ La carpeta correcta debe contener al menos:
 ## Setup automático de UI en Unity (recomendado)
 Si abriste `GameScene` pero te faltan referencias en Inspector, usa:
 
-- `FortuneHeist > Setup > Auto Wire Scene UI`
+- `FortuneHeist > Setup > Bootstrap Everything` (recomendado, todo en un click)
+- `FortuneHeist > Setup > Auto Wire Scene UI` (solo crea/conecta UI)
+- `FortuneHeist > Setup > Validate Scene Setup` (diagnóstico de referencias faltantes)
 
-Este comando crea Canvas/EventSystem, textos/botones base, un prefab de fila en `Assets/Prefabs/RowButton.prefab` y conecta automáticamente los campos serializados clave (`GameplayController`, `BuildingSystem`, `GameplayHudPresenter`, `FtueOverlayPresenter`, `DebugMenu`).
+`Bootstrap Everything` asegura escena/build settings, abre `Assets/Scenes/GameScene.unity`, ejecuta autowire de UI y corre validación.
+
+El autowire crea Canvas/EventSystem, textos/botones base, un prefab de fila en `Assets/Prefabs/RowButton.prefab` y conecta automáticamente los campos serializados clave (`GameplayController`, `BuildingSystem`, `GameplayHudPresenter`, `FtueOverlayPresenter`, `DebugMenu`).
 
 ## Premium visual pass (nuevo)
 - Tema visual configurable por JSON en `Assets/StreamingAssets/theme_config.json`.
