@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +11,10 @@ namespace FortuneHeist
         [SerializeField] private AttackSystem attackSystem;
         [SerializeField] private WheelSystem wheelSystem;
         [SerializeField] private SaveSystem saveSystem;
+        [SerializeField] private FtueSystem ftueSystem;
+        [SerializeField] private DailyRewardSystem dailyRewardSystem;
+        [SerializeField] private AnalyticsSystem analyticsSystem;
+        [SerializeField] private GameplayHudPresenter hudPresenter;
 
         [Header("UI")]
         [SerializeField] private Text resultText;
@@ -23,10 +28,26 @@ namespace FortuneHeist
             if (attackSystem == null) attackSystem = FindObjectOfType<AttackSystem>();
             if (wheelSystem == null) wheelSystem = FindObjectOfType<WheelSystem>();
             if (saveSystem == null) saveSystem = FindObjectOfType<SaveSystem>();
+            if (ftueSystem == null) ftueSystem = FindObjectOfType<FtueSystem>();
+            if (dailyRewardSystem == null) dailyRewardSystem = FindObjectOfType<DailyRewardSystem>();
+            if (analyticsSystem == null) analyticsSystem = FindObjectOfType<AnalyticsSystem>();
+            if (hudPresenter == null) hudPresenter = FindObjectOfType<GameplayHudPresenter>();
+
+            buildingSystem.OnBuildingUpgraded += HandleBuildingUpgraded;
 
             LoadProgress();
+            TryClaimDailyRewardOnStart();
             BuildTargetUI();
             RefreshUiCounters();
+            Track("session_start", new Dictionary<string, object> { { "gold", buildingSystem.PlayerGold }, { "spins", wheelSystem.Spins } });
+        }
+
+        private void OnDestroy()
+        {
+            if (buildingSystem != null)
+            {
+                buildingSystem.OnBuildingUpgraded -= HandleBuildingUpgraded;
+            }
         }
 
         public void SpinWheel()
@@ -67,6 +88,15 @@ namespace FortuneHeist
                     break;
             }
 
+            ftueSystem?.OnSpinDone();
+            Track("spin_result", new Dictionary<string, object>
+            {
+                { "outcome", outcome.ToString() },
+                { "gold_delta", goldDelta },
+                { "target", target == null ? "none" : target.Name },
+                { "streak", wheelSystem.HeistStreak }
+            });
+
             RefreshUiCounters();
             BuildTargetUI();
             SaveProgress();
@@ -75,7 +105,10 @@ namespace FortuneHeist
         public void SelectTarget(int index)
         {
             attackSystem.SelectTarget(index);
+            ftueSystem?.OnTargetSelected();
+            Track("target_selected", new Dictionary<string, object> { { "index", index }, { "name", attackSystem.SelectedTarget?.Name } });
             BuildTargetUI();
+            RefreshUiCounters();
             SaveProgress();
         }
 
@@ -94,6 +127,10 @@ namespace FortuneHeist
                 SelectedTargetIndex = attackSystem.SelectedTargetIndex,
                 PlayerBuildings = buildingSystem.ExportBuildingStates(),
                 Targets = attackSystem.ExportTargetStates(),
+                FtueStep = ftueSystem == null ? 0 : ftueSystem.CurrentStep,
+                FtueCompleted = ftueSystem != null && ftueSystem.IsCompleted,
+                LastDailyRewardDate = dailyRewardSystem == null ? null : dailyRewardSystem.LastClaimDate,
+                DailyRewardStreak = dailyRewardSystem == null ? 0 : dailyRewardSystem.Streak,
             };
 
             saveSystem.Save(state);
@@ -117,8 +154,44 @@ namespace FortuneHeist
             wheelSystem.SetSpins(state.Spins);
             wheelSystem.SetHeistStreak(state.HeistStreak);
             attackSystem.ImportTargetStates(state.Targets, state.SelectedTargetIndex);
+            ftueSystem?.Restore(state.FtueStep, state.FtueCompleted);
+            dailyRewardSystem?.Restore(state.LastDailyRewardDate, state.DailyRewardStreak);
 
             SetResult($"Progress loaded (save unix: {state.LastSaveUnix}).");
+        }
+
+        private void TryClaimDailyRewardOnStart()
+        {
+            if (dailyRewardSystem == null || !dailyRewardSystem.CanClaimToday())
+            {
+                return;
+            }
+
+            int reward = dailyRewardSystem.ClaimToday();
+            if (reward > 0)
+            {
+                buildingSystem.AddGold(reward);
+                SetResult($"Daily reward claimed: +{reward} gold.");
+                Track("daily_reward_claimed", new Dictionary<string, object>
+                {
+                    { "reward", reward },
+                    { "streak", dailyRewardSystem.Streak }
+                });
+                SaveProgress();
+            }
+        }
+
+        private void HandleBuildingUpgraded(BuildingData building, int cost)
+        {
+            ftueSystem?.OnBuildingUpgraded();
+            Track("building_upgrade", new Dictionary<string, object>
+            {
+                { "name", building.Name },
+                { "level", building.Level },
+                { "cost", cost }
+            });
+            SaveProgress();
+            RefreshUiCounters();
         }
 
         private void BuildTargetUI()
@@ -170,6 +243,14 @@ namespace FortuneHeist
             {
                 buildingSystem.RefreshUI();
             }
+
+            if (hudPresenter != null)
+            {
+                string targetName = attackSystem?.SelectedTarget == null ? "None" : attackSystem.SelectedTarget.Name;
+                string ftueInstruction = ftueSystem == null ? "FTUE off" : ftueSystem.CurrentInstruction;
+                int dailyStreak = dailyRewardSystem == null ? 0 : dailyRewardSystem.Streak;
+                hudPresenter.Refresh(buildingSystem.PlayerGold, wheelSystem.Spins, wheelSystem.HeistStreak, targetName, ftueInstruction, dailyStreak);
+            }
         }
 
         private void SetResult(string text)
@@ -177,6 +258,14 @@ namespace FortuneHeist
             if (resultText != null)
             {
                 resultText.text = text;
+            }
+        }
+
+        private void Track(string eventName, Dictionary<string, object> parameters = null)
+        {
+            if (analyticsSystem != null)
+            {
+                analyticsSystem.Track(eventName, parameters);
             }
         }
     }

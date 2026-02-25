@@ -16,6 +16,7 @@ namespace FortuneHeist
         public IReadOnlyList<BuildingData> Buildings => buildings;
 
         public event Action OnBuildingChanged;
+        public event Action<BuildingData, int> OnBuildingUpgraded;
 
         private void Awake()
         {
@@ -63,6 +64,7 @@ namespace FortuneHeist
 
             PlayerGold -= cost;
             data.Upgrade();
+            OnBuildingUpgraded?.Invoke(data, cost);
             RefreshUI();
             return true;
         }

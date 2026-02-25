@@ -31,6 +31,13 @@ namespace FortuneHeist
         public int SelectedTargetIndex;
         public List<BuildingState> PlayerBuildings = new List<BuildingState>();
         public List<TargetState> Targets = new List<TargetState>();
+
+        // Sprint 1 progression systems
+        public int FtueStep;
+        public bool FtueCompleted;
+        public string LastDailyRewardDate;
+        public int DailyRewardStreak;
+
         public long LastSaveUnix;
     }
 }

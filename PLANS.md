@@ -42,15 +42,20 @@
 - Added editor bootstrap to ensure `Assets/Scenes/GameScene.unity` exists.
 - Build settings auto-set so `GameScene` is the default launch scene.
 
-## Executed Plan (Current Phase)
-- Added persistent local save system (`SaveSystem`) writing JSON to `Application.persistentDataPath`.
-- Added serializable snapshots (`GameStateData`, `BuildingState`, `TargetState`).
-- Connected `GameplayController` to auto-save after spins/target changes and load progress at startup.
-- Added import/export state helpers to `BuildingSystem`, `AttackSystem`, and setters in `WheelSystem`.
+## Executed Sprint 1 (3 Steps)
+1. **UI/HUD foundation**
+   - Added `GameplayHudPresenter` to centralize top-level HUD labels (gold, spins/streak, target, FTUE status, daily streak).
+2. **FTUE + Daily Reward**
+   - Added `FtueSystem` with 3-step onboarding: select target → spin → upgrade.
+   - Added `DailyRewardSystem` with streak-based daily claim multiplier.
+   - Persisted FTUE and daily reward data in `GameStateData`.
+3. **Analytics hooks**
+   - Added `AnalyticsSystem` with event capture for: session start, target select, spin result, building upgrade, daily reward claim.
+   - Wired event tracking into `GameplayController` flow.
 
 ## Next Open Items
 - Replace placeholder UI with production UGUI prefabs + animation transitions.
-- Add daily rewards and FTUE onboarding for first session.
-- Integrate analytics events (spin result, upgrade, attack, rob).
+- Add full FTUE overlay (arrow/highlight/modal) beyond text hints.
+- Integrate remote analytics backend (Firebase/Unity Analytics) replacing local logger.
 - Add Android build pipeline (keystore, versioning, CI artifacts).
 - Monetization implementation (Rewarded Ads + IAP) after gameplay KPIs are stable.
