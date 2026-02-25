@@ -12,6 +12,15 @@ La carpeta correcta debe contener al menos:
 - `Packages/manifest.json`
 - `ProjectSettings/ProjectVersion.txt`
 
+## Si Unity no abre el proyecto
+1. Verifica versión del editor: **2022.3.20f1** (o una 2022.3 LTS compatible).
+2. Mueve la carpeta del proyecto fuera de rutas sincronizadas (OneDrive/Dropbox), por ejemplo `C:\UnityProjects\fortune-heist-game`.
+3. Borra cachés locales (si existen): `Library/`, `Temp/`, `Obj/`, `Logs/`.
+4. Abre Unity Hub como administrador una vez y vuelve a `Add project`.
+5. Si falla, revisa log:
+   - `%LOCALAPPDATA%\Unity\Editor\Editor.log`
+   - busca las últimas líneas con `error` o `exception`.
+
 ## Python (rápido)
 ### Requisitos
 - Python 3.10+
