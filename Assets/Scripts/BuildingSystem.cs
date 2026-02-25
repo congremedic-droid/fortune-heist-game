@@ -11,6 +11,7 @@ namespace FortuneHeist
         [SerializeField] private RectTransform buildingListRoot;
         [SerializeField] private Button buildingRowButtonPrefab;
         [SerializeField] private Text goldText;
+        [SerializeField] private GameplayController gameplayController;
 
         public int PlayerGold { get; private set; } = 500;
         public IReadOnlyList<BuildingData> Buildings => buildings;
@@ -21,6 +22,7 @@ namespace FortuneHeist
         private void Awake()
         {
             EnsureDefaultBuildings();
+            if (gameplayController == null) gameplayController = FindObjectOfType<GameplayController>();
             RefreshUI();
         }
 
@@ -52,6 +54,12 @@ namespace FortuneHeist
         {
             if (index < 0 || index >= buildings.Count)
             {
+                return false;
+            }
+
+            if (gameplayController != null && !gameplayController.CanUpgradeByFtue())
+            {
+                gameplayController.NotifyUpgradeBlockedByFtue();
                 return false;
             }
 

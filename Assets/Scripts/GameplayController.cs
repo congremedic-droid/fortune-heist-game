@@ -12,15 +12,16 @@ namespace FortuneHeist
         [SerializeField] private WheelSystem wheelSystem;
         [SerializeField] private SaveSystem saveSystem;
         [SerializeField] private FtueSystem ftueSystem;
+        [SerializeField] private FtueOverlayPresenter ftueOverlayPresenter;
         [SerializeField] private DailyRewardSystem dailyRewardSystem;
         [SerializeField] private AnalyticsSystem analyticsSystem;
         [SerializeField] private GameplayHudPresenter hudPresenter;
 
         [Header("UI")]
-        [SerializeField] private Text resultText;
         [SerializeField] private Text spinText;
         [SerializeField] private RectTransform targetListRoot;
         [SerializeField] private Button targetButtonPrefab;
+        [SerializeField] private Button spinButton;
 
         private void Start()
         {
@@ -29,6 +30,7 @@ namespace FortuneHeist
             if (wheelSystem == null) wheelSystem = FindObjectOfType<WheelSystem>();
             if (saveSystem == null) saveSystem = FindObjectOfType<SaveSystem>();
             if (ftueSystem == null) ftueSystem = FindObjectOfType<FtueSystem>();
+            if (ftueOverlayPresenter == null) ftueOverlayPresenter = FindObjectOfType<FtueOverlayPresenter>();
             if (dailyRewardSystem == null) dailyRewardSystem = FindObjectOfType<DailyRewardSystem>();
             if (analyticsSystem == null) analyticsSystem = FindObjectOfType<AnalyticsSystem>();
             if (hudPresenter == null) hudPresenter = FindObjectOfType<GameplayHudPresenter>();
@@ -52,6 +54,13 @@ namespace FortuneHeist
 
         public void SpinWheel()
         {
+            if (ftueSystem != null && !ftueSystem.IsActionAllowed(FtueAction.SpinWheel))
+            {
+                ftueOverlayPresenter?.ShowBlockedHint("Completa el paso actual del tutorial antes de girar.");
+                ShowResult("Acción bloqueada por FTUE", false, warning: true);
+                return;
+            }
+
             WheelOutcome outcome = wheelSystem.Spin();
             TargetBaseData target = attackSystem.GetTargetOrRandom();
             int goldDelta = 0;
@@ -61,30 +70,30 @@ namespace FortuneHeist
                 case WheelOutcome.Gold:
                     goldDelta = wheelSystem.GetBaseGoldReward() + buildingSystem.GetTotalRewardBonus();
                     buildingSystem.AddGold(goldDelta);
-                    SetResult($"Gold outcome! +{goldDelta} gold.");
+                    ShowResult($"Gold outcome! +{goldDelta} gold.", true);
                     break;
                 case WheelOutcome.Attack:
                     goldDelta = attackSystem.ResolveAttack(target);
                     if (target != null && target.HasShield)
                     {
-                        SetResult($"Attack blocked by {target.Name} shield.");
+                        ShowResult($"Attack blocked by {target.Name} shield.", false, warning: true);
                     }
                     else
                     {
                         buildingSystem.AddGold(goldDelta);
-                        SetResult($"Attack success on {target?.Name}. +{goldDelta} gold and enemy building downgraded.");
+                        ShowResult($"Attack success on {target?.Name}. +{goldDelta} gold and enemy building downgraded.", true);
                     }
                     break;
                 case WheelOutcome.Rob:
                     goldDelta = attackSystem.ResolveRob(target, wheelSystem.HeistStreak);
                     buildingSystem.AddGold(goldDelta);
-                    SetResult($"Rob success on {target?.Name}! Stole {goldDelta} gold with streak x{wheelSystem.HeistStreak}.");
+                    ShowResult($"Rob success on {target?.Name}! Stole {goldDelta} gold with streak x{wheelSystem.HeistStreak}.", true);
                     break;
                 case WheelOutcome.Shield:
-                    SetResult("Shield outcome. Next incoming attack can be blocked (placeholder logic).");
+                    ShowResult("Shield outcome. Next incoming attack can be blocked (placeholder logic).", false);
                     break;
                 default:
-                    SetResult("No spins available.");
+                    ShowResult("No spins available.", false, warning: true);
                     break;
             }
 
@@ -104,12 +113,29 @@ namespace FortuneHeist
 
         public void SelectTarget(int index)
         {
+            if (ftueSystem != null && !ftueSystem.IsActionAllowed(FtueAction.SelectTarget))
+            {
+                ftueOverlayPresenter?.ShowBlockedHint("Selecciona objetivo cuando el tutorial lo indique.");
+                return;
+            }
+
             attackSystem.SelectTarget(index);
             ftueSystem?.OnTargetSelected();
             Track("target_selected", new Dictionary<string, object> { { "index", index }, { "name", attackSystem.SelectedTarget?.Name } });
             BuildTargetUI();
             RefreshUiCounters();
             SaveProgress();
+        }
+
+        public bool CanUpgradeByFtue()
+        {
+            return ftueSystem == null || ftueSystem.IsActionAllowed(FtueAction.UpgradeBuilding);
+        }
+
+        public void NotifyUpgradeBlockedByFtue()
+        {
+            ftueOverlayPresenter?.ShowBlockedHint("Haz primero los pasos anteriores del tutorial.");
+            ShowResult("Mejora bloqueada por FTUE", false, warning: true);
         }
 
         public void SaveProgress()
@@ -157,7 +183,7 @@ namespace FortuneHeist
             ftueSystem?.Restore(state.FtueStep, state.FtueCompleted);
             dailyRewardSystem?.Restore(state.LastDailyRewardDate, state.DailyRewardStreak);
 
-            SetResult($"Progress loaded (save unix: {state.LastSaveUnix}).");
+            ShowResult($"Progress loaded (save unix: {state.LastSaveUnix}).", false);
         }
 
         private void TryClaimDailyRewardOnStart()
@@ -171,7 +197,7 @@ namespace FortuneHeist
             if (reward > 0)
             {
                 buildingSystem.AddGold(reward);
-                SetResult($"Daily reward claimed: +{reward} gold.");
+                ShowResult($"Daily reward claimed: +{reward} gold.", true);
                 Track("daily_reward_claimed", new Dictionary<string, object>
                 {
                     { "reward", reward },
@@ -190,6 +216,8 @@ namespace FortuneHeist
                 { "level", building.Level },
                 { "cost", cost }
             });
+
+            ShowResult($"Upgraded {building.Name} to level {building.Level}.", true);
             SaveProgress();
             RefreshUiCounters();
         }
@@ -239,6 +267,12 @@ namespace FortuneHeist
                 spinText.text = $"Spins: {wheelSystem.Spins} | Heist x{wheelSystem.HeistStreak}";
             }
 
+            if (spinButton != null)
+            {
+                bool canSpin = ftueSystem == null || ftueSystem.IsActionAllowed(FtueAction.SpinWheel);
+                spinButton.interactable = wheelSystem.Spins > 0 && canSpin;
+            }
+
             if (buildingSystem != null)
             {
                 buildingSystem.RefreshUI();
@@ -251,13 +285,15 @@ namespace FortuneHeist
                 int dailyStreak = dailyRewardSystem == null ? 0 : dailyRewardSystem.Streak;
                 hudPresenter.Refresh(buildingSystem.PlayerGold, wheelSystem.Spins, wheelSystem.HeistStreak, targetName, ftueInstruction, dailyStreak);
             }
+
+            ftueOverlayPresenter?.Refresh(ftueSystem);
         }
 
-        private void SetResult(string text)
+        private void ShowResult(string text, bool positive, bool warning = false)
         {
-            if (resultText != null)
+            if (hudPresenter != null)
             {
-                resultText.text = text;
+                hudPresenter.ShowResult(text, positive, warning);
             }
         }
 

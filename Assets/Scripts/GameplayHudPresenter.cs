@@ -10,6 +10,10 @@ namespace FortuneHeist
         [SerializeField] private Text selectedTargetText;
         [SerializeField] private Text ftueText;
         [SerializeField] private Text dailyRewardText;
+        [SerializeField] private Text resultText;
+        [SerializeField] private Color positiveColor = new Color(0.35f, 1f, 0.45f);
+        [SerializeField] private Color neutralColor = Color.white;
+        [SerializeField] private Color warningColor = new Color(1f, 0.6f, 0.3f);
 
         public void Refresh(int gold, int spins, int heistStreak, string selectedTarget, string ftueInstruction, int dailyStreak)
         {
@@ -18,6 +22,24 @@ namespace FortuneHeist
             if (selectedTargetText != null) selectedTargetText.text = $"Target: {selectedTarget}";
             if (ftueText != null) ftueText.text = ftueInstruction;
             if (dailyRewardText != null) dailyRewardText.text = $"Daily streak: {dailyStreak}";
+        }
+
+        public void ShowResult(string text, bool positive, bool warning = false)
+        {
+            if (resultText == null)
+            {
+                return;
+            }
+
+            resultText.text = text;
+            if (warning)
+            {
+                resultText.color = warningColor;
+            }
+            else
+            {
+                resultText.color = positive ? positiveColor : neutralColor;
+            }
         }
     }
 }

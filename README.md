@@ -21,10 +21,11 @@ La carpeta correcta debe contener al menos:
    - `%LOCALAPPDATA%\Unity\Editor\Editor.log`
    - busca las últimas líneas con `error` o `exception`.
 
-## Sprint 1 implementado (3 pasos)
-- **Paso 1 - UI/HUD base:** `GameplayHudPresenter` para mostrar oro, spins/streak, target seleccionado, estado FTUE y racha diaria.
-- **Paso 2 - FTUE + Daily Reward:** `FtueSystem` (3 pasos) y `DailyRewardSystem` con recompensa por racha; ambos persisten en el save.
-- **Paso 3 - Analytics:** `AnalyticsSystem` con eventos instrumentados desde `GameplayController`.
+## Sprint 1 + Sprint 2 implementados
+- **HUD feedback:** `GameplayHudPresenter` maneja estado de cabecera y mensajes con estilo (positivo/neutral/warning).
+- **FTUE visual + gating:** `FtueOverlayPresenter` + reglas de acción permitida (`FtueSystem.IsActionAllowed`).
+- **Daily reward:** racha persistente y claim automático diario.
+- **Analytics adaptable:** `AnalyticsSystem` con modos `DebugLog`, `Buffered` y `UnityBackendPlaceholder`.
 
 ## Novedad: progreso persistente (Unity)
 - El juego guarda estado local automáticamente tras spin, upgrade y cambio de target.
@@ -58,6 +59,7 @@ python -m unittest discover -s tests -p 'test_*.py'
   - `WheelSystem.cs`
   - `SaveSystem.cs`
   - `FtueSystem.cs`
+  - `FtueOverlayPresenter.cs`
   - `DailyRewardSystem.cs`
   - `AnalyticsSystem.cs`
   - `GameplayHudPresenter.cs`

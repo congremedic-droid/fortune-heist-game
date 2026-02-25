@@ -42,20 +42,28 @@
 - Added editor bootstrap to ensure `Assets/Scenes/GameScene.unity` exists.
 - Build settings auto-set so `GameScene` is the default launch scene.
 
-## Executed Sprint 1 (3 Steps)
-1. **UI/HUD foundation**
-   - Added `GameplayHudPresenter` to centralize top-level HUD labels (gold, spins/streak, target, FTUE status, daily streak).
-2. **FTUE + Daily Reward**
-   - Added `FtueSystem` with 3-step onboarding: select target → spin → upgrade.
-   - Added `DailyRewardSystem` with streak-based daily claim multiplier.
-   - Persisted FTUE and daily reward data in `GameStateData`.
-3. **Analytics hooks**
-   - Added `AnalyticsSystem` with event capture for: session start, target select, spin result, building upgrade, daily reward claim.
-   - Wired event tracking into `GameplayController` flow.
+## Executed Sprint 1 (already completed)
+1. UI/HUD foundation (`GameplayHudPresenter`).
+2. FTUE + Daily Reward systems with persistence.
+3. Local analytics event hooks.
+
+## Executed Sprint 2 (current)
+1. **UI feedback layer**
+   - `GameplayHudPresenter.ShowResult(...)` now supports positive/neutral/warning styling.
+   - `GameplayController` routes gameplay outcomes to HUD feedback helper.
+2. **FTUE visual guidance + soft gating**
+   - Added `FtueOverlayPresenter` (tutorial panel + blocked-action hint).
+   - Added FTUE action gating in `FtueSystem` (`IsActionAllowed`).
+   - Enforced gating for spin, target selection, and building upgrades.
+3. **Analytics backend adapter architecture**
+   - Reworked `AnalyticsSystem` to support provider modes:
+     - `DebugLog`
+     - `Buffered`
+     - `UnityBackendPlaceholder` (ready swap for Firebase/Unity Analytics SDK).
 
 ## Next Open Items
-- Replace placeholder UI with production UGUI prefabs + animation transitions.
-- Add full FTUE overlay (arrow/highlight/modal) beyond text hints.
-- Integrate remote analytics backend (Firebase/Unity Analytics) replacing local logger.
+- Create production UGUI prefabs and bind all presenter fields in scene.
+- Replace analytics placeholder with Firebase/Unity Analytics real SDK implementation.
 - Add Android build pipeline (keystore, versioning, CI artifacts).
+- Add live balance controls (remote config) before monetization rollout.
 - Monetization implementation (Rewarded Ads + IAP) after gameplay KPIs are stable.

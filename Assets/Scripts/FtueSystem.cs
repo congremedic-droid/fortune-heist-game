@@ -2,6 +2,13 @@ using UnityEngine;
 
 namespace FortuneHeist
 {
+    public enum FtueAction
+    {
+        SelectTarget,
+        SpinWheel,
+        UpgradeBuilding
+    }
+
     public class FtueSystem : MonoBehaviour
     {
         public int CurrentStep { get; private set; }
@@ -27,6 +34,31 @@ namespace FortuneHeist
         {
             CurrentStep = Mathf.Max(0, step);
             IsCompleted = completed;
+        }
+
+        public bool IsActionAllowed(FtueAction action)
+        {
+            if (IsCompleted)
+            {
+                return true;
+            }
+
+            if (CurrentStep == 0)
+            {
+                return action == FtueAction.SelectTarget;
+            }
+
+            if (CurrentStep == 1)
+            {
+                return action == FtueAction.SpinWheel || action == FtueAction.SelectTarget;
+            }
+
+            if (CurrentStep == 2)
+            {
+                return action == FtueAction.UpgradeBuilding || action == FtueAction.SelectTarget;
+            }
+
+            return true;
         }
 
         public void OnTargetSelected()
