@@ -4,6 +4,14 @@ Repositorio híbrido con:
 - Prototipo Python (CLI + simulación JSON)
 - Fase MVP de Unity (Building/Attack/Rob con visuales placeholder)
 
+## ⚠️ Cómo abrir en Unity (importante)
+Si descargas ZIP desde GitHub, **descomprímelo completo** y en Unity Hub usa **Add/Open** sobre la carpeta raíz `fortune-heist-game`, NO sobre `fortune_heist/`.
+
+La carpeta correcta debe contener al menos:
+- `Assets/`
+- `Packages/manifest.json`
+- `ProjectSettings/ProjectVersion.txt`
+
 ## Python (rápido)
 ### Requisitos
 - Python 3.10+

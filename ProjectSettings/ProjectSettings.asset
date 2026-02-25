@@ -1,0 +1,9 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!129 &1
+PlayerSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 27
+  productGUID: 4f7f84d2f04444f28d9901f20757dcb1
+  companyName: Fortune Heist
+  productName: Fortune Heist Game
