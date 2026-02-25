@@ -21,6 +21,14 @@ La carpeta correcta debe contener al menos:
    - `%LOCALAPPDATA%\Unity\Editor\Editor.log`
    - busca las últimas líneas con `error` o `exception`.
 
+
+## Setup automático de UI en Unity (recomendado)
+Si abriste `GameScene` pero te faltan referencias en Inspector, usa:
+
+- `FortuneHeist > Setup > Auto Wire Scene UI`
+
+Este comando crea Canvas/EventSystem, textos/botones base, un prefab de fila en `Assets/Prefabs/RowButton.prefab` y conecta automáticamente los campos serializados clave (`GameplayController`, `BuildingSystem`, `GameplayHudPresenter`, `FtueOverlayPresenter`, `DebugMenu`).
+
 ## Premium visual pass (nuevo)
 - Tema visual configurable por JSON en `Assets/StreamingAssets/theme_config.json`.
 - `ThemeConfigService` carga el tema y lo aplica en runtime vía `GameplayHudPresenter.ApplyTheme(...)`.
