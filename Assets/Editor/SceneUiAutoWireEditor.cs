@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System;
 using System.IO;
 using UnityEditor;
 using UnityEditor.Events;
@@ -14,6 +15,35 @@ namespace FortuneHeist.Editor
         private const string PrefabFolder = "Assets/Prefabs";
         private const string RowButtonPrefabPath = PrefabFolder + "/RowButton.prefab";
         private const string ScenePath = "Assets/Scenes/GameScene.unity";
+        private const double SmokeTestDurationSeconds = 8d;
+
+        private static bool smokeTestRunning;
+        private static bool smokeTestSawErrors;
+        private static double smokeTestStartedAt;
+
+        [MenuItem("FortuneHeist/Setup/Bootstrap + Smoke Playtest")]
+        public static void BootstrapAndSmokePlaytest()
+        {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                Debug.LogWarning("[FortuneHeist] Smoke playtest already running or editor is entering play mode.");
+                return;
+            }
+
+            BootstrapEverything();
+            ClearSaveIfPresent();
+
+            smokeTestRunning = true;
+            smokeTestSawErrors = false;
+            smokeTestStartedAt = 0d;
+
+            Application.logMessageReceived += OnSmokeTestLog;
+            EditorApplication.playModeStateChanged += OnSmokePlayModeChanged;
+            EditorApplication.update += TickSmokeTest;
+
+            EditorApplication.EnterPlaymode();
+            Debug.Log("[FortuneHeist] Smoke playtest started. Waiting for runtime stability checks...");
+        }
 
         [MenuItem("FortuneHeist/Setup/Bootstrap Everything")]
         public static void BootstrapEverything()
@@ -22,6 +52,86 @@ namespace FortuneHeist.Editor
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             AutoWireSceneUi();
             ValidateSceneSetup();
+        }
+
+        private static void ClearSaveIfPresent()
+        {
+            SaveSystem saveSystem = Object.FindObjectOfType<SaveSystem>();
+            if (saveSystem == null)
+            {
+                return;
+            }
+
+            saveSystem.ClearSave();
+            Debug.Log("[FortuneHeist] Existing local save cleared before smoke playtest.");
+        }
+
+        private static void TickSmokeTest()
+        {
+            if (!smokeTestRunning || !EditorApplication.isPlaying)
+            {
+                return;
+            }
+
+            if (smokeTestStartedAt <= 0d)
+            {
+                smokeTestStartedAt = EditorApplication.timeSinceStartup;
+            }
+
+            double elapsed = EditorApplication.timeSinceStartup - smokeTestStartedAt;
+            if (elapsed < SmokeTestDurationSeconds)
+            {
+                return;
+            }
+
+            EditorApplication.ExitPlaymode();
+        }
+
+        private static void OnSmokePlayModeChanged(PlayModeStateChange state)
+        {
+            if (!smokeTestRunning)
+            {
+                return;
+            }
+
+            if (state != PlayModeStateChange.EnteredEditMode)
+            {
+                return;
+            }
+
+            double elapsed = Math.Max(0d, EditorApplication.timeSinceStartup - smokeTestStartedAt);
+            if (smokeTestSawErrors)
+            {
+                Debug.LogWarning($"[FortuneHeist] Smoke playtest FAILED after {elapsed:F1}s (check console errors/exceptions).");
+            }
+            else
+            {
+                Debug.Log($"[FortuneHeist] Smoke playtest PASSED in {elapsed:F1}s. Scene is stable enough for manual playtest.");
+            }
+
+            CleanupSmokeTestHooks();
+        }
+
+        private static void OnSmokeTestLog(string condition, string stackTrace, LogType type)
+        {
+            if (!smokeTestRunning)
+            {
+                return;
+            }
+
+            if (type == LogType.Error || type == LogType.Assert || type == LogType.Exception)
+            {
+                smokeTestSawErrors = true;
+            }
+        }
+
+        private static void CleanupSmokeTestHooks()
+        {
+            smokeTestRunning = false;
+            smokeTestStartedAt = 0d;
+            Application.logMessageReceived -= OnSmokeTestLog;
+            EditorApplication.playModeStateChanged -= OnSmokePlayModeChanged;
+            EditorApplication.update -= TickSmokeTest;
         }
 
         [MenuItem("FortuneHeist/Setup/Auto Wire Scene UI")]

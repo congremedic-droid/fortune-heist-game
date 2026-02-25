@@ -26,10 +26,13 @@ La carpeta correcta debe contener al menos:
 Si abriste `GameScene` pero te faltan referencias en Inspector, usa:
 
 - `FortuneHeist > Setup > Bootstrap Everything` (recomendado, todo en un click)
+- `FortuneHeist > Setup > Bootstrap + Smoke Playtest` (setup + mini prueba automática de estabilidad)
 - `FortuneHeist > Setup > Auto Wire Scene UI` (solo crea/conecta UI)
 - `FortuneHeist > Setup > Validate Scene Setup` (diagnóstico de referencias faltantes)
 
 `Bootstrap Everything` asegura escena/build settings, abre `Assets/Scenes/GameScene.unity`, ejecuta autowire de UI y corre validación.
+
+`Bootstrap + Smoke Playtest` además limpia save local, entra a Play Mode ~8 segundos y reporta PASS/FAIL automático según errores/excepciones detectadas.
 
 El autowire crea Canvas/EventSystem, textos/botones base, un prefab de fila en `Assets/Prefabs/RowButton.prefab` y conecta automáticamente los campos serializados clave (`GameplayController`, `BuildingSystem`, `GameplayHudPresenter`, `FtueOverlayPresenter`, `DebugMenu`).
 
