@@ -46,6 +46,6 @@
 ## Next Open Items
 - Bind production prefabs in `GameScene` (HUD text, FTUE overlay and result animator references).
 - Replace `UnityBackendPlaceholder` analytics provider with Firebase/Unity Analytics SDK.
-- Add keystore secret handling for signed release builds in CI.
-- Extend remote config to include FTUE toggles and event frequency tuning.
+- ✅ Added optional keystore secret handling for signed Android CI builds (`FH_ANDROID_KEYSTORE_*` + alias secrets).
+- ✅ Extended remote config with `FtueEnabled`, `AnalyticsSampleRate` and `AnalyticsProviderOverride` (local file + runtime application).
 - Monetization implementation (Rewarded Ads + IAP) after gameplay KPIs are stable.

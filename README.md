@@ -35,16 +35,28 @@ La carpeta correcta debe contener al menos:
 
 ## Live balance (Remote Config local)
 - Configurable en `Assets/StreamingAssets/remote_balance.json`.
-- Ajusta probabilidades y economía sin recompilar:
+- Ajusta probabilidades, FTUE y analytics sin recompilar:
   - gold/attack/rob chances
   - gold reward, attack bonus
   - rob min/max percent
   - heist streak cap
   - building upgrade cost multiplier
+  - `FtueEnabled` para activar/desactivar tutorial
+  - `AnalyticsSampleRate` (0.0 - 1.0) para muestreo de eventos
+  - `AnalyticsProviderOverride` (`debuglog`, `buffered`, `unityservices`)
 
 ## Build Android local (Unity Editor)
 - Menú: `FortuneHeist/Build/Android APK`
 - Menú: `FortuneHeist/Build/Android AAB`
+
+## CI Android firmado (opcional)
+Si quieres artefactos firmados en GitHub Actions, agrega estos secrets en el repo:
+- `FH_ANDROID_KEYSTORE_BASE64` (keystore en base64)
+- `FH_ANDROID_KEYSTORE_PASS`
+- `FH_ANDROID_KEYALIAS_NAME`
+- `FH_ANDROID_KEYALIAS_PASS`
+
+Cuando `FH_ANDROID_KEYSTORE_BASE64` está presente, el workflow decodifica `BuildSecrets/release.keystore` y el build aplica firma custom desde variables de entorno.
 
 ## Python (rápido)
 ### Requisitos
@@ -64,3 +76,9 @@ python -m fortune_heist.cli --preview-json
 ```bash
 python -m unittest discover -s tests -p 'test_*.py'
 ```
+
+
+## Próximos pasos sugeridos
+- Conectar `UnityBackendPlaceholder` con Firebase Analytics o Unity Gaming Services Analytics.
+- Configurar firma Android en CI (keystore/base64 + secrets) para release interno.
+- Vincular prefabs finales de HUD/FTUE en `GameScene` y validar en dispositivo Android.

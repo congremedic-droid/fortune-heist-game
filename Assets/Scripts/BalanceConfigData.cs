@@ -18,6 +18,11 @@ namespace FortuneHeist
 
         public float BuildingUpgradeCostMultiplier = 1f;
 
+        // Live-tunable feature flags
+        public bool FtueEnabled = true;
+        public float AnalyticsSampleRate = 1f;
+        public string AnalyticsProviderOverride = ""; // debuglog|buffered|unityservices
+
         public static BalanceConfigData Default()
         {
             return new BalanceConfigData();

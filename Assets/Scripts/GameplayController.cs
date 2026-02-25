@@ -14,6 +14,7 @@ namespace FortuneHeist
         [SerializeField] private FtueSystem ftueSystem;
         [SerializeField] private FtueOverlayPresenter ftueOverlayPresenter;
         [SerializeField] private DailyRewardSystem dailyRewardSystem;
+        [SerializeField] private RemoteConfigService remoteConfigService;
         [SerializeField] private ThemeConfigService themeConfigService;
         [SerializeField] private AnalyticsSystem analyticsSystem;
         [SerializeField] private GameplayHudPresenter hudPresenter;
@@ -33,11 +34,19 @@ namespace FortuneHeist
             if (ftueSystem == null) ftueSystem = FindObjectOfType<FtueSystem>();
             if (ftueOverlayPresenter == null) ftueOverlayPresenter = FindObjectOfType<FtueOverlayPresenter>();
             if (dailyRewardSystem == null) dailyRewardSystem = FindObjectOfType<DailyRewardSystem>();
+            if (remoteConfigService == null) remoteConfigService = FindObjectOfType<RemoteConfigService>();
             if (themeConfigService == null) themeConfigService = FindObjectOfType<ThemeConfigService>();
             if (analyticsSystem == null) analyticsSystem = FindObjectOfType<AnalyticsSystem>();
             if (hudPresenter == null) hudPresenter = FindObjectOfType<GameplayHudPresenter>();
 
             buildingSystem.OnBuildingUpgraded += HandleBuildingUpgraded;
+
+            if (remoteConfigService != null)
+            {
+                remoteConfigService.OnConfigUpdated += HandleBalanceConfigUpdated;
+                HandleBalanceConfigUpdated(remoteConfigService.CurrentConfig);
+            }
+
             if (themeConfigService != null)
             {
                 themeConfigService.OnThemeUpdated += HandleThemeUpdated;
@@ -61,6 +70,11 @@ namespace FortuneHeist
             if (themeConfigService != null)
             {
                 themeConfigService.OnThemeUpdated -= HandleThemeUpdated;
+            }
+
+            if (remoteConfigService != null)
+            {
+                remoteConfigService.OnConfigUpdated -= HandleBalanceConfigUpdated;
             }
         }
 
@@ -217,6 +231,27 @@ namespace FortuneHeist
                 });
                 SaveProgress();
             }
+        }
+
+
+        private void HandleBalanceConfigUpdated(BalanceConfigData config)
+        {
+            if (config == null)
+            {
+                return;
+            }
+
+            if (ftueSystem != null)
+            {
+                ftueSystem.SetEnabled(config.FtueEnabled);
+            }
+
+            if (analyticsSystem != null)
+            {
+                analyticsSystem.ApplyRuntimeConfig(config.AnalyticsSampleRate, config.AnalyticsProviderOverride);
+            }
+
+            RefreshUiCounters();
         }
 
         private void HandleThemeUpdated(ThemeConfigData data)

@@ -11,6 +11,7 @@ namespace FortuneHeist
 
     public class FtueSystem : MonoBehaviour
     {
+        public bool IsEnabled { get; private set; } = true;
         public int CurrentStep { get; private set; }
         public bool IsCompleted { get; private set; }
 
@@ -21,6 +22,11 @@ namespace FortuneHeist
                 if (IsCompleted)
                 {
                     return "FTUE completed";
+                }
+
+                if (!IsEnabled)
+                {
+                    return "FTUE disabled";
                 }
 
                 if (CurrentStep == 0) return "Paso 1: selecciona un objetivo";
@@ -36,9 +42,30 @@ namespace FortuneHeist
             IsCompleted = completed;
         }
 
+        public void SetEnabled(bool enabled)
+        {
+            IsEnabled = enabled;
+            if (!enabled)
+            {
+                CurrentStep = 0;
+                IsCompleted = true;
+                return;
+            }
+
+            if (IsCompleted)
+            {
+                IsCompleted = false;
+            }
+        }
+
         public bool IsActionAllowed(FtueAction action)
         {
             if (IsCompleted)
+            {
+                return true;
+            }
+
+            if (!IsEnabled)
             {
                 return true;
             }

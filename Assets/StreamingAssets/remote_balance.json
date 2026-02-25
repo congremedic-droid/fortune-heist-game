@@ -7,5 +7,8 @@
   "RobMinPercent": 10,
   "RobMaxPercent": 33,
   "HeistStreakCap": 5,
-  "BuildingUpgradeCostMultiplier": 1.0
+  "BuildingUpgradeCostMultiplier": 1.0,
+  "FtueEnabled": true,
+  "AnalyticsSampleRate": 1.0,
+  "AnalyticsProviderOverride": ""
 }

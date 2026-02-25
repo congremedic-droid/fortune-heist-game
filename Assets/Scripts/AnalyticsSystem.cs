@@ -67,6 +67,7 @@ namespace FortuneHeist
     public class AnalyticsSystem : MonoBehaviour
     {
         [SerializeField] private AnalyticsProviderType providerType = AnalyticsProviderType.DebugLog;
+        [SerializeField, Range(0f, 1f)] private float sampleRate = 1f;
 
         private readonly List<string> recentEvents = new List<string>();
         private IAnalyticsProvider provider;
@@ -80,6 +81,11 @@ namespace FortuneHeist
 
         public void Track(string eventName, Dictionary<string, object> parameters = null)
         {
+            if (!ShouldTrackEvent())
+            {
+                return;
+            }
+
             string line = $"[{DateTime.UtcNow:O}] {eventName}";
             recentEvents.Add(line);
             if (recentEvents.Count > 50)
@@ -88,6 +94,62 @@ namespace FortuneHeist
             }
 
             provider?.Track(eventName, parameters ?? new Dictionary<string, object>());
+        }
+
+        public void ApplyRuntimeConfig(float configuredSampleRate, string providerOverride)
+        {
+            sampleRate = Mathf.Clamp01(configuredSampleRate);
+
+            AnalyticsProviderType resolvedProvider = ResolveProvider(providerOverride);
+            bool providerChanged = resolvedProvider != providerType;
+            providerType = resolvedProvider;
+
+            if (providerChanged || provider == null)
+            {
+                provider = BuildProvider();
+            }
+        }
+
+        private bool ShouldTrackEvent()
+        {
+            if (sampleRate >= 0.999f)
+            {
+                return true;
+            }
+
+            if (sampleRate <= 0f)
+            {
+                return false;
+            }
+
+            return UnityEngine.Random.value <= sampleRate;
+        }
+
+        private AnalyticsProviderType ResolveProvider(string providerOverride)
+        {
+            if (string.IsNullOrWhiteSpace(providerOverride))
+            {
+                return providerType;
+            }
+
+            string normalized = providerOverride.Trim().ToLowerInvariant();
+            if (normalized == "debuglog")
+            {
+                return AnalyticsProviderType.DebugLog;
+            }
+
+            if (normalized == "buffered")
+            {
+                return AnalyticsProviderType.Buffered;
+            }
+
+            if (normalized == "unityservices")
+            {
+                return AnalyticsProviderType.UnityBackendPlaceholder;
+            }
+
+            Debug.LogWarning($"[AnalyticsSystem] Unknown provider override '{providerOverride}', using inspector value.");
+            return providerType;
         }
 
         private IAnalyticsProvider BuildProvider()

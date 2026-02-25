@@ -37,8 +37,40 @@ namespace FortuneHeist.Editor
             }
 
             EditorUserBuildSettings.buildAppBundle = bundle;
+            ConfigureSigningFromEnvironment();
             BuildAndroid(BuildOptions.StrictMode, artifact);
             EditorUserBuildSettings.buildAppBundle = false;
+        }
+
+
+        private static void ConfigureSigningFromEnvironment()
+        {
+            string useCustomKeystore = Environment.GetEnvironmentVariable("FH_ANDROID_USE_CUSTOM_KEYSTORE");
+            bool enabled = string.Equals(useCustomKeystore, "true", StringComparison.OrdinalIgnoreCase);
+            if (!enabled)
+            {
+                return;
+            }
+
+            string keystoreName = Environment.GetEnvironmentVariable("FH_ANDROID_KEYSTORE_NAME");
+            string keystorePass = Environment.GetEnvironmentVariable("FH_ANDROID_KEYSTORE_PASS");
+            string aliasName = Environment.GetEnvironmentVariable("FH_ANDROID_KEYALIAS_NAME");
+            string aliasPass = Environment.GetEnvironmentVariable("FH_ANDROID_KEYALIAS_PASS");
+
+            if (string.IsNullOrWhiteSpace(keystoreName) ||
+                string.IsNullOrWhiteSpace(keystorePass) ||
+                string.IsNullOrWhiteSpace(aliasName) ||
+                string.IsNullOrWhiteSpace(aliasPass))
+            {
+                throw new Exception("Custom Android signing enabled but one or more keystore variables are missing.");
+            }
+
+            PlayerSettings.Android.useCustomKeystore = true;
+            PlayerSettings.Android.keystoreName = keystoreName;
+            PlayerSettings.Android.keystorePass = keystorePass;
+            PlayerSettings.Android.keyaliasName = aliasName;
+            PlayerSettings.Android.keyaliasPass = aliasPass;
+            Debug.Log("Android custom signing configured from environment variables.");
         }
 
         private static void BuildAndroid(BuildOptions options, string artifactName)
