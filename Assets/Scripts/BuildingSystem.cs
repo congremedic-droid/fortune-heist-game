@@ -1,0 +1,125 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace FortuneHeist
+{
+    public class BuildingSystem : MonoBehaviour
+    {
+        [SerializeField] private List<BuildingData> buildings = new List<BuildingData>();
+        [SerializeField] private RectTransform buildingListRoot;
+        [SerializeField] private Button buildingRowButtonPrefab;
+        [SerializeField] private Text goldText;
+
+        public int PlayerGold { get; private set; } = 500;
+        public IReadOnlyList<BuildingData> Buildings => buildings;
+
+        public event Action OnBuildingChanged;
+
+        private void Awake()
+        {
+            if (buildings.Count == 0)
+            {
+                buildings.Add(new BuildingData { Name = "Vault", Level = 1, BaseUpgradeCost = 100, RewardBonus = 10 });
+                buildings.Add(new BuildingData { Name = "Security Hub", Level = 1, BaseUpgradeCost = 120, RewardBonus = 5 });
+                buildings.Add(new BuildingData { Name = "Crypto Lab", Level = 0, BaseUpgradeCost = 140, RewardBonus = 8 });
+            }
+
+            RefreshUI();
+        }
+
+        public void AddGold(int amount)
+        {
+            PlayerGold = Mathf.Max(0, PlayerGold + amount);
+            RefreshUI();
+        }
+
+        public bool TryUpgradeBuilding(int index)
+        {
+            if (index < 0 || index >= buildings.Count)
+            {
+                return false;
+            }
+
+            BuildingData data = buildings[index];
+            int cost = data.GetUpgradeCost();
+            if (PlayerGold < cost)
+            {
+                return false;
+            }
+
+            PlayerGold -= cost;
+            data.Upgrade();
+            RefreshUI();
+            return true;
+        }
+
+        public int GetTotalRewardBonus()
+        {
+            int total = 0;
+            for (int i = 0; i < buildings.Count; i++)
+            {
+                total += buildings[i].RewardBonus;
+            }
+
+            return total;
+        }
+
+        public void ResetBuildingLevels()
+        {
+            for (int i = 0; i < buildings.Count; i++)
+            {
+                buildings[i].Level = 0;
+                buildings[i].RewardBonus = 0;
+            }
+
+            RefreshUI();
+        }
+
+        public string DumpBuildingLevels()
+        {
+            List<string> lines = new List<string>();
+            for (int i = 0; i < buildings.Count; i++)
+            {
+                lines.Add($"{buildings[i].Name}: L{buildings[i].Level}, Bonus {buildings[i].RewardBonus}");
+            }
+
+            return string.Join(" | ", lines);
+        }
+
+        public void RefreshUI()
+        {
+            if (goldText != null)
+            {
+                goldText.text = $"Gold: {PlayerGold}";
+            }
+
+            if (buildingListRoot != null && buildingRowButtonPrefab != null)
+            {
+                for (int i = buildingListRoot.childCount - 1; i >= 0; i--)
+                {
+                    Destroy(buildingListRoot.GetChild(i).gameObject);
+                }
+
+                for (int i = 0; i < buildings.Count; i++)
+                {
+                    int index = i;
+                    BuildingData building = buildings[i];
+                    Button row = Instantiate(buildingRowButtonPrefab, buildingListRoot);
+                    Text text = row.GetComponentInChildren<Text>();
+                    int cost = building.GetUpgradeCost();
+                    if (text != null)
+                    {
+                        text.text = $"{building.Name} | Lv {building.Level} | Cost {cost} | Bonus {building.RewardBonus}";
+                    }
+
+                    row.interactable = PlayerGold >= cost;
+                    row.onClick.AddListener(() => TryUpgradeBuilding(index));
+                }
+            }
+
+            OnBuildingChanged?.Invoke();
+        }
+    }
+}

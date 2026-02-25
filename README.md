@@ -1,26 +1,34 @@
 # Fortune Heist Game
 
-Juego de consola por turnos donde intentas robar una fortuna sin disparar la alarma.
+Repositorio híbrido con:
+- Prototipo Python (CLI + simulación JSON)
+- Fase MVP de Unity (Building/Attack/Rob con visuales placeholder)
 
-## Requisitos
+## Python (rápido)
+### Requisitos
 - Python 3.10+
 
-## Ejecutar (modo interactivo)
+### Ejecutar (modo interactivo)
 ```bash
 python -m fortune_heist.cli
 ```
 
-## Vista previa para Unity (JSON)
+### Vista previa para Unity (JSON)
 ```bash
 python -m fortune_heist.cli --preview-json
 ```
 
-También puedes pasar acciones y semilla propias:
-```bash
-python -m fortune_heist.cli --preview-json --actions "scout,steal,hide,steal" --seed 7
-```
-
-## Ejecutar pruebas
+### Ejecutar pruebas
 ```bash
 python -m unittest discover -s tests -p 'test_*.py'
 ```
+
+## Unity MVP
+- Scripts principales en `Assets/Scripts/`:
+  - `BuildingSystem.cs`
+  - `AttackSystem.cs`
+  - `WheelSystem.cs`
+  - `GameplayController.cs`
+  - `DebugMenu.cs`
+- Setup editor en `Assets/Editor/SceneSetupEditor.cs` para garantizar `GameScene` y Build Settings por defecto.
+- Plan técnico actualizado en `PLANS.md`.
