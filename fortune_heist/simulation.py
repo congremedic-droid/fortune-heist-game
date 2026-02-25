@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from dataclasses import asdict
 import random
-from typing import Iterable, Any
+from typing import Any, Iterable
 
-from .game import FortuneHeistGame, HeistAction
+from .game import BalanceTuning, FortuneHeistGame, HeistAction
 
 
-def simulate_actions(actions: Iterable[Any], seed: int = 42) -> dict:
+def simulate_actions(actions: Iterable[Any], seed: int = 42, tuning: dict[str, Any] | None = None) -> dict:
     """Simula una partida y devuelve una vista previa estructurada para Unity."""
-    game = FortuneHeistGame(rng=random.Random(seed))
+    game_tuning = BalanceTuning(**(tuning or {}))
+    game = FortuneHeistGame(rng=random.Random(seed), tuning=game_tuning)
     turns: list[dict] = []
 
     for index, raw_action in enumerate(actions, start=1):
@@ -46,6 +47,7 @@ def simulate_actions(actions: Iterable[Any], seed: int = 42) -> dict:
         "seed": seed,
         "target_loot": game.target_loot,
         "max_alert": game.max_alert,
+        "tuning": game.tuning_snapshot(),
         "turns": turns,
         "final": {
             "loot": game.loot,

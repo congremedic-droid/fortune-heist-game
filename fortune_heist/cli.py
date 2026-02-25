@@ -25,12 +25,49 @@ def run() -> None:
         default=42,
         help="Semilla determinística para --preview-json.",
     )
+    parser.add_argument(
+        "--steal-base-min",
+        type=int,
+        default=14,
+        help="Balance tuning: robo mínimo base por acción STEAL.",
+    )
+    parser.add_argument(
+        "--steal-base-max",
+        type=int,
+        default=28,
+        help="Balance tuning: robo máximo base por acción STEAL.",
+    )
+    parser.add_argument(
+        "--steal-alert-min",
+        type=int,
+        default=16,
+        help="Balance tuning: alerta mínima agregada por STEAL.",
+    )
+    parser.add_argument(
+        "--steal-alert-max",
+        type=int,
+        default=26,
+        help="Balance tuning: alerta máxima agregada por STEAL.",
+    )
+    parser.add_argument(
+        "--steal-heat-per-chain",
+        type=int,
+        default=6,
+        help="Balance tuning: calor extra por robo consecutivo.",
+    )
 
     args = parser.parse_args()
 
     if args.preview_json:
         actions = [item.strip() for item in args.actions.split(",") if item.strip()]
-        preview = simulate_actions(actions=actions, seed=args.seed)
+        tuning = {
+            "steal_base_min": args.steal_base_min,
+            "steal_base_max": args.steal_base_max,
+            "steal_alert_min": args.steal_alert_min,
+            "steal_alert_max": args.steal_alert_max,
+            "steal_heat_per_chain": args.steal_heat_per_chain,
+        }
+        preview = simulate_actions(actions=actions, seed=args.seed, tuning=tuning)
         print(json.dumps(preview, indent=2, ensure_ascii=False))
         return
 

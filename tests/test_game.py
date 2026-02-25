@@ -73,6 +73,24 @@ class FortuneHeistGameTests(unittest.TestCase):
         self.assertEqual(preview["turns"][2]["input"], "scout")
         self.assertTrue(preview["turns"][2]["valid_input"])
 
+    def test_simulation_includes_tuning_and_applies_custom_values(self):
+        preview = simulate_actions(
+            ["steal"],
+            seed=11,
+            tuning={
+                "steal_base_min": 5,
+                "steal_base_max": 5,
+                "steal_intel_divisor": 100,
+                "steal_alert_min": 10,
+                "steal_alert_max": 10,
+            },
+        )
+
+        self.assertEqual(preview["tuning"]["steal_base_min"], 5)
+        self.assertEqual(preview["tuning"]["steal_base_max"], 5)
+        self.assertEqual(preview["final"]["loot"], 5)
+
+
 
 if __name__ == "__main__":
     unittest.main()

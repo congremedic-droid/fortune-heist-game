@@ -77,6 +77,20 @@ python -m fortune_heist.cli --preview-json
 python -m unittest discover -s tests -p 'test_*.py'
 ```
 
+### Vista previa con tuning de balance (nuevo)
+```bash
+python -m fortune_heist.cli --preview-json \
+  --seed 42 \
+  --actions "scout,steal,steal,hide,steal" \
+  --steal-base-min 12 \
+  --steal-base-max 24 \
+  --steal-alert-min 18 \
+  --steal-alert-max 30 \
+  --steal-heat-per-chain 8
+```
+
+El JSON de salida ahora incluye un bloque `tuning` para registrar exactamente los parámetros usados en la simulación.
+
 
 ## Próximos pasos sugeridos
 - Conectar `UnityBackendPlaceholder` con Firebase Analytics o Unity Gaming Services Analytics.
