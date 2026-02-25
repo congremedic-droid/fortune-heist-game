@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fortune Heist - Vista Gráfica Preview</title>
+  <style>
+    :root{--bg:#101522;--card:#192234;--accent:#f7c948;--ok:#2dd4bf;--warn:#f97316;--bad:#ef4444;--text:#e5e7eb}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,Arial;background:radial-gradient(circle at top,#1a2742,var(--bg));color:var(--text)}
+    .wrap{max-width:980px;margin:24px auto;padding:16px}
+    .header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    h1{margin:0;font-size:1.4rem} .badge{background:#263452;padding:6px 10px;border-radius:999px;border:1px solid #33446b}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+    .card{background:linear-gradient(180deg,#1e2b44,var(--card));border:1px solid #314266;border-radius:12px;padding:14px;box-shadow:0 8px 20px #0004}
+    .k{font-size:.8rem;opacity:.8}.v{font-size:1.5rem;font-weight:700;margin-top:2px}
+    .bar{height:12px;background:#0f172a;border-radius:999px;overflow:hidden;border:1px solid #334155}.fill{height:100%;background:linear-gradient(90deg,var(--ok),#22c55e)}
+    .fill.alert{background:linear-gradient(90deg,var(--warn),var(--bad))}
+    .panel{margin-top:14px;background:var(--card);border:1px solid #314266;border-radius:12px;padding:14px}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+    button{background:#2a3a5d;color:#fff;border:1px solid #415886;border-radius:10px;padding:9px 12px;font-weight:600;cursor:pointer}
+    button:hover{filter:brightness(1.1)}
+    .log{max-height:280px;overflow:auto;background:#0b1220;border:1px solid #24314d;border-radius:10px;padding:8px}
+    .entry{padding:8px;border-bottom:1px solid #1f2b45;font-size:.9rem}
+    .entry:last-child{border-bottom:none}
+    .chip{padding:2px 8px;border-radius:999px;background:#314266;font-size:.75rem;margin-left:6px}
+    @media (max-width:760px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1>Fortune Heist - Vista Gráfica (Preview)</h1>
+      <span class="badge">MVP visual para pruebas rápidas</span>
+    </div>
+
+    <div class="grid">
+      <div class="card"><div class="k">Botín</div><div class="v" id="loot">$0M</div></div>
+      <div class="card"><div class="k">Inteligencia</div><div class="v" id="intel">0</div><div class="bar"><div id="intelFill" class="fill" style="width:0%"></div></div></div>
+      <div class="card"><div class="k">Alerta</div><div class="v" id="alert">0</div><div class="bar"><div id="alertFill" class="fill alert" style="width:0%"></div></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="controls">
+        <button data-action="scout">Scout</button>
+        <button data-action="hack">Hack</button>
+        <button data-action="steal">Steal</button>
+        <button data-action="hide">Hide</button>
+        <button id="reset">Reiniciar</button>
+      </div>
+      <div id="status">Estado: listo</div>
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+
+  <script>
+    const state = { loot: 0, intel: 0, alert: 0, over: false, turn: 0 };
+
+    const lootEl = document.getElementById('loot');
+    const intelEl = document.getElementById('intel');
+    const alertEl = document.getElementById('alert');
+    const intelFill = document.getElementById('intelFill');
+    const alertFill = document.getElementById('alertFill');
+    const statusEl = document.getElementById('status');
+    const logEl = document.getElementById('log');
+
+    const r = (min,max)=>Math.floor(Math.random()*(max-min+1))+min;
+    const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
+
+    function update() {
+      lootEl.textContent = `$${state.loot}M`;
+      intelEl.textContent = state.intel;
+      alertEl.textContent = state.alert;
+      intelFill.style.width = `${state.intel}%`;
+      alertFill.style.width = `${state.alert}%`;
+      statusEl.textContent = `Turno ${state.turn} · Botín ${state.loot}/100 · Alerta ${state.alert}/100`;
+    }
+
+    function addLog(text, tag='info') {
+      const e = document.createElement('div');
+      e.className = 'entry';
+      e.innerHTML = `${text} <span class="chip">${tag}</span>`;
+      logEl.prepend(e);
+    }
+
+    function finishIfNeeded() {
+      if (state.loot >= 100 && state.alert < 100) {
+        state.over = true; addLog('¡Victoria! Escape perfecto.', 'win');
+      } else if (state.alert >= 100) {
+        state.over = true; addLog('Derrota: alerta máxima.', 'lose');
+      }
+      update();
+    }
+
+    function apply(action) {
+      if (state.over) return;
+      state.turn += 1;
+      if (action === 'scout') {
+        state.intel = clamp(state.intel + r(15,30),0,100);
+        state.alert = clamp(state.alert + r(5,12),0,100);
+        addLog('Reconociste la bóveda y reuniste información.', action);
+      } else if (action === 'hack') {
+        const successChance = 40 + Math.floor(state.intel / 2);
+        if (r(1,100) <= successChance) {
+          state.alert = clamp(state.alert - r(10,20),0,100);
+          state.intel = clamp(state.intel - 10,0,100);
+          addLog('Hack exitoso: bajaste la alerta.', action);
+        } else {
+          state.alert = clamp(state.alert + r(15,25),0,100);
+          addLog('Hack fallido: seguridad detectó actividad.', action);
+        }
+      } else if (action === 'steal') {
+        const stolen = r(14,28) + Math.floor(state.intel / 12);
+        state.loot += stolen;
+        state.intel = clamp(state.intel - r(8,15),0,100);
+        state.alert = clamp(state.alert + r(16,26),0,100);
+        addLog(`Robaste $${stolen}M en activos de alto valor.`, action);
+      } else if (action === 'hide') {
+        const reduced = r(12,22);
+        state.alert = clamp(state.alert - reduced,0,100);
+        addLog(`Te escondiste y redujiste alerta en ${reduced}.`, action);
+      }
+      update();
+      finishIfNeeded();
+    }
+
+    document.querySelectorAll('button[data-action]').forEach(btn=>btn.addEventListener('click',()=>apply(btn.dataset.action)));
+    document.getElementById('reset').addEventListener('click',()=>{
+      state.loot=0; state.intel=0; state.alert=0; state.over=false; state.turn=0;
+      logEl.innerHTML='';
+      addLog('Partida reiniciada.', 'reset');
+      update();
+    });
+
+    addLog('Preview listo. Usa los botones para simular.', 'init');
+    update();
+  </script>
+</body>
+</html>
