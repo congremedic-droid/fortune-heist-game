@@ -1,0 +1,14 @@
+{
+  "GoldOutcomeChance": 40,
+  "AttackOutcomeChance": 25,
+  "RobOutcomeChance": 25,
+  "BaseGoldReward": 55,
+  "AttackGoldBonus": 70,
+  "RobMinPercent": 10,
+  "RobMaxPercent": 33,
+  "HeistStreakCap": 5,
+  "BuildingUpgradeCostMultiplier": 1.0,
+  "FtueEnabled": true,
+  "AnalyticsSampleRate": 1.0,
+  "AnalyticsProviderOverride": ""
+}

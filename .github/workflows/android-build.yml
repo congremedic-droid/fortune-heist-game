@@ -1,0 +1,45 @@
+name: Android Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - work
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Decode Android keystore (optional)
+        if: ${{ secrets.FH_ANDROID_KEYSTORE_BASE64 != '' }}
+        shell: bash
+        run: |
+          mkdir -p BuildSecrets
+          echo "${{ secrets.FH_ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > BuildSecrets/release.keystore
+
+      - name: Build Android APK (GameCI)
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          FH_ANDROID_BUNDLE: "false"
+          FH_ANDROID_ARTIFACT: fortune-heist-ci.apk
+          FH_ANDROID_USE_CUSTOM_KEYSTORE: ${{ secrets.FH_ANDROID_KEYSTORE_BASE64 != '' }}
+          FH_ANDROID_KEYSTORE_NAME: BuildSecrets/release.keystore
+          FH_ANDROID_KEYSTORE_PASS: ${{ secrets.FH_ANDROID_KEYSTORE_PASS }}
+          FH_ANDROID_KEYALIAS_NAME: ${{ secrets.FH_ANDROID_KEYALIAS_NAME }}
+          FH_ANDROID_KEYALIAS_PASS: ${{ secrets.FH_ANDROID_KEYALIAS_PASS }}
+        with:
+          targetPlatform: Android
+          buildMethod: FortuneHeist.Editor.AndroidBuildPipeline.BuildAndroidForCI
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-build
+          path: Builds/Android/*
