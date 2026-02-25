@@ -21,17 +21,24 @@ La carpeta correcta debe contener al menos:
    - `%LOCALAPPDATA%\Unity\Editor\Editor.log`
    - busca las últimas líneas con `error` o `exception`.
 
-## Sprint 1 + Sprint 2 implementados
-- **HUD feedback:** `GameplayHudPresenter` maneja estado de cabecera y mensajes con estilo (positivo/neutral/warning).
-- **FTUE visual + gating:** `FtueOverlayPresenter` + reglas de acción permitida (`FtueSystem.IsActionAllowed`).
-- **Daily reward:** racha persistente y claim automático diario.
-- **Analytics adaptable:** `AnalyticsSystem` con modos `DebugLog`, `Buffered` y `UnityBackendPlaceholder`.
+## Roadmap implementado (primeros 4 pasos)
+- **UI feedback mejorado:** `GameplayHudPresenter` + `UIFeedbackAnimator`.
+- **FTUE visual y gating:** `FtueOverlayPresenter` + bloqueo de acciones por paso.
+- **Analytics adaptable:** proveedores intercambiables en `AnalyticsSystem`.
+- **Android pipeline:** build script `AndroidBuildPipeline` + workflow `android-build.yml`.
 
-## Novedad: progreso persistente (Unity)
-- El juego guarda estado local automáticamente tras spin, upgrade y cambio de target.
-- Archivo guardado en `Application.persistentDataPath/fortune_heist_save.json`.
-- Incluye oro, spins, heist streak, edificios del jugador, objetivos NPC, FTUE y daily reward.
-- Desde `DebugMenu` puedes limpiar progreso con `ClearProgress`.
+## Live balance (Remote Config local)
+- Configurable en `Assets/StreamingAssets/remote_balance.json`.
+- Ajusta probabilidades y economía sin recompilar:
+  - gold/attack/rob chances
+  - gold reward, attack bonus
+  - rob min/max percent
+  - heist streak cap
+  - building upgrade cost multiplier
+
+## Build Android local (Unity Editor)
+- Menú: `FortuneHeist/Build/Android APK`
+- Menú: `FortuneHeist/Build/Android AAB`
 
 ## Python (rápido)
 ### Requisitos
@@ -51,19 +58,3 @@ python -m fortune_heist.cli --preview-json
 ```bash
 python -m unittest discover -s tests -p 'test_*.py'
 ```
-
-## Unity MVP
-- Scripts principales en `Assets/Scripts/`:
-  - `BuildingSystem.cs`
-  - `AttackSystem.cs`
-  - `WheelSystem.cs`
-  - `SaveSystem.cs`
-  - `FtueSystem.cs`
-  - `FtueOverlayPresenter.cs`
-  - `DailyRewardSystem.cs`
-  - `AnalyticsSystem.cs`
-  - `GameplayHudPresenter.cs`
-  - `GameplayController.cs`
-  - `DebugMenu.cs`
-- Setup editor en `Assets/Editor/SceneSetupEditor.cs` para garantizar `GameScene` y Build Settings por defecto.
-- Plan técnico actualizado en `PLANS.md`.

@@ -37,6 +37,7 @@ namespace FortuneHeist.Editor
             GameObject systems = new GameObject("GameplaySystems");
             systems.AddComponent<FortuneHeist.BuildingSystem>();
             systems.AddComponent<FortuneHeist.AttackSystem>();
+            systems.AddComponent<FortuneHeist.RemoteConfigService>();
             systems.AddComponent<FortuneHeist.WheelSystem>();
             systems.AddComponent<FortuneHeist.SaveSystem>();
             systems.AddComponent<FortuneHeist.FtueSystem>();

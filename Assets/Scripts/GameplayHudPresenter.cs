@@ -14,6 +14,7 @@ namespace FortuneHeist
         [SerializeField] private Color positiveColor = new Color(0.35f, 1f, 0.45f);
         [SerializeField] private Color neutralColor = Color.white;
         [SerializeField] private Color warningColor = new Color(1f, 0.6f, 0.3f);
+        [SerializeField] private UIFeedbackAnimator resultAnimator;
 
         public void Refresh(int gold, int spins, int heistStreak, string selectedTarget, string ftueInstruction, int dailyStreak)
         {
@@ -40,6 +41,8 @@ namespace FortuneHeist
             {
                 resultText.color = positive ? positiveColor : neutralColor;
             }
+
+            resultAnimator?.PlayPulse();
         }
     }
 }

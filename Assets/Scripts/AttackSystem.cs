@@ -7,6 +7,7 @@ namespace FortuneHeist
     {
         [SerializeField] private List<TargetBaseData> targets = new List<TargetBaseData>();
         [SerializeField] private int attackGoldBonus = 60;
+        [SerializeField] private RemoteConfigService remoteConfigService;
 
         public IReadOnlyList<TargetBaseData> Targets => targets;
         public TargetBaseData SelectedTarget { get; private set; }
@@ -14,6 +15,7 @@ namespace FortuneHeist
 
         private void Awake()
         {
+            if (remoteConfigService == null) remoteConfigService = FindObjectOfType<RemoteConfigService>();
             EnsureDefaultTargets();
             if (SelectedTarget == null && targets.Count > 0)
             {
@@ -72,7 +74,8 @@ namespace FortuneHeist
             }
 
             target.DowngradeOneBuildingLevel();
-            return attackGoldBonus;
+            int configured = remoteConfigService == null ? attackGoldBonus : remoteConfigService.CurrentConfig.AttackGoldBonus;
+            return configured > 0 ? configured : attackGoldBonus;
         }
 
         public int ResolveRob(TargetBaseData target, int heistStreak)
@@ -82,10 +85,12 @@ namespace FortuneHeist
                 return 0;
             }
 
-            int min = Mathf.Max(10, target.GoldPool / 10);
-            int max = Mathf.Max(min + 1, target.GoldPool / 3);
+            BalanceConfigData cfg = remoteConfigService == null ? BalanceConfigData.Default() : remoteConfigService.CurrentConfig;
+            int min = Mathf.Max(10, target.GoldPool * Mathf.Max(1, cfg.RobMinPercent) / 100);
+            int max = Mathf.Max(min + 1, target.GoldPool * Mathf.Max(cfg.RobMinPercent + 1, cfg.RobMaxPercent) / 100);
             int stolen = Random.Range(min, max);
-            float multiplier = Mathf.Clamp(heistStreak, 1, 5);
+            int cap = remoteConfigService == null ? 5 : Mathf.Max(1, remoteConfigService.CurrentConfig.HeistStreakCap);
+            float multiplier = Mathf.Clamp(heistStreak, 1, cap);
             int finalStolen = Mathf.RoundToInt(stolen * multiplier);
 
             target.GoldPool = Mathf.Max(0, target.GoldPool - finalStolen);

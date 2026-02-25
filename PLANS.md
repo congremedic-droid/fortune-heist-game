@@ -24,46 +24,23 @@
      - applies `HeistStreak` multiplier from `WheelSystem`.
 3. Economy/UI update after each outcome.
 
-## UI Sketch (Placeholder)
-- Left panel: Buildings list (name, level, upgrade cost, bonus, upgrade button).
-- Center/top: Spin button + spins counter + heist streak.
-- Right panel: Target list (name, base level, gold pool, shield state, selected marker).
-- Bottom: Result text and debug controls.
+## Executed Roadmap (first 4 steps)
+1. **UI production foundation**
+   - Added result pulse support through `UIFeedbackAnimator` and richer result styling in `GameplayHudPresenter`.
+2. **FTUE visual complete baseline**
+   - Added `FtueOverlayPresenter` + FTUE action gating for target/spin/upgrade.
+3. **Analytics backend-ready architecture**
+   - `AnalyticsSystem` now has pluggable providers (`DebugLog`, `Buffered`, `UnityBackendPlaceholder`).
+4. **Android build pipeline**
+   - Added `AndroidBuildPipeline` editor script and CI workflow (`.github/workflows/android-build.yml`).
 
-## Debug / Testing Helpers
-- Debug menu actions:
-  - Add gold
-  - Add spins
-  - Show building levels
-  - Reset building levels
-  - Clear save progress
-
-## Scene Setup
-- Added editor bootstrap to ensure `Assets/Scenes/GameScene.unity` exists.
-- Build settings auto-set so `GameScene` is the default launch scene.
-
-## Executed Sprint 1 (already completed)
-1. UI/HUD foundation (`GameplayHudPresenter`).
-2. FTUE + Daily Reward systems with persistence.
-3. Local analytics event hooks.
-
-## Executed Sprint 2 (current)
-1. **UI feedback layer**
-   - `GameplayHudPresenter.ShowResult(...)` now supports positive/neutral/warning styling.
-   - `GameplayController` routes gameplay outcomes to HUD feedback helper.
-2. **FTUE visual guidance + soft gating**
-   - Added `FtueOverlayPresenter` (tutorial panel + blocked-action hint).
-   - Added FTUE action gating in `FtueSystem` (`IsActionAllowed`).
-   - Enforced gating for spin, target selection, and building upgrades.
-3. **Analytics backend adapter architecture**
-   - Reworked `AnalyticsSystem` to support provider modes:
-     - `DebugLog`
-     - `Buffered`
-     - `UnityBackendPlaceholder` (ready swap for Firebase/Unity Analytics SDK).
+## Live Balance / Remote Config
+- Added `RemoteConfigService` loading `StreamingAssets/remote_balance.json`.
+- Wheel/attack/rob/building costs now read runtime config values from `BalanceConfigData`.
 
 ## Next Open Items
-- Create production UGUI prefabs and bind all presenter fields in scene.
-- Replace analytics placeholder with Firebase/Unity Analytics real SDK implementation.
-- Add Android build pipeline (keystore, versioning, CI artifacts).
-- Add live balance controls (remote config) before monetization rollout.
+- Bind production prefabs in `GameScene` (HUD text, FTUE overlay and result animator references).
+- Replace `UnityBackendPlaceholder` analytics provider with Firebase/Unity Analytics SDK.
+- Add keystore secret handling for signed release builds in CI.
+- Extend remote config to include FTUE toggles and event frequency tuning.
 - Monetization implementation (Rewarded Ads + IAP) after gameplay KPIs are stable.

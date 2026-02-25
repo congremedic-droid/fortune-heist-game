@@ -12,6 +12,7 @@ namespace FortuneHeist
         [SerializeField] private Button buildingRowButtonPrefab;
         [SerializeField] private Text goldText;
         [SerializeField] private GameplayController gameplayController;
+        [SerializeField] private RemoteConfigService remoteConfigService;
 
         public int PlayerGold { get; private set; } = 500;
         public IReadOnlyList<BuildingData> Buildings => buildings;
@@ -23,6 +24,7 @@ namespace FortuneHeist
         {
             EnsureDefaultBuildings();
             if (gameplayController == null) gameplayController = FindObjectOfType<GameplayController>();
+            if (remoteConfigService == null) remoteConfigService = FindObjectOfType<RemoteConfigService>();
             RefreshUI();
         }
 
@@ -64,7 +66,7 @@ namespace FortuneHeist
             }
 
             BuildingData data = buildings[index];
-            int cost = data.GetUpgradeCost();
+            int cost = GetUpgradeCost(data);
             if (PlayerGold < cost)
             {
                 return false;
@@ -151,6 +153,13 @@ namespace FortuneHeist
             RefreshUI();
         }
 
+
+        private int GetUpgradeCost(BuildingData building)
+        {
+            float multiplier = remoteConfigService == null ? 1f : Mathf.Max(0.5f, remoteConfigService.CurrentConfig.BuildingUpgradeCostMultiplier);
+            return Mathf.RoundToInt(building.GetUpgradeCost() * multiplier);
+        }
+
         public void RefreshUI()
         {
             if (goldText != null)
@@ -171,7 +180,7 @@ namespace FortuneHeist
                     BuildingData building = buildings[i];
                     Button row = Instantiate(buildingRowButtonPrefab, buildingListRoot);
                     Text text = row.GetComponentInChildren<Text>();
-                    int cost = building.GetUpgradeCost();
+                    int cost = GetUpgradeCost(building);
                     if (text != null)
                     {
                         text.text = $"{building.Name} | Lv {building.Level} | Cost {cost} | Bonus {building.RewardBonus}";
