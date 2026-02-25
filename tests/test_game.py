@@ -62,6 +62,17 @@ class FortuneHeistGameTests(unittest.TestCase):
         self.assertFalse(first_turn["valid_input"])
         self.assertEqual(first_turn["applied_action"], "hide")
 
+    def test_simulation_handles_non_string_actions(self):
+        preview = simulate_actions([None, 123, " SCOUT "], seed=10)
+
+        self.assertEqual(len(preview["turns"]), 3)
+        self.assertEqual(preview["turns"][0]["input"], "")
+        self.assertFalse(preview["turns"][0]["valid_input"])
+        self.assertEqual(preview["turns"][1]["input"], "123")
+        self.assertFalse(preview["turns"][1]["valid_input"])
+        self.assertEqual(preview["turns"][2]["input"], "scout")
+        self.assertTrue(preview["turns"][2]["valid_input"])
+
 
 if __name__ == "__main__":
     unittest.main()

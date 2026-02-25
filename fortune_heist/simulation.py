@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from dataclasses import asdict
 import random
-from typing import Iterable
+from typing import Iterable, Any
 
 from .game import FortuneHeistGame, HeistAction
 
 
-def simulate_actions(actions: Iterable[str], seed: int = 42) -> dict:
+def simulate_actions(actions: Iterable[Any], seed: int = 42) -> dict:
     """Simula una partida y devuelve una vista previa estructurada para Unity."""
     game = FortuneHeistGame(rng=random.Random(seed))
     turns: list[dict] = []
@@ -16,7 +16,7 @@ def simulate_actions(actions: Iterable[str], seed: int = 42) -> dict:
         if game.is_over:
             break
 
-        normalized = raw_action.strip().lower()
+        normalized = _normalize_action(raw_action)
         before = {"loot": game.loot, "alert": game.alert, "intel": game.intel}
 
         try:
@@ -56,3 +56,13 @@ def simulate_actions(actions: Iterable[str], seed: int = 42) -> dict:
             "status_line": game.status_line(),
         },
     }
+
+
+def _normalize_action(raw_action: Any) -> str:
+    if raw_action is None:
+        return ""
+
+    if isinstance(raw_action, str):
+        return raw_action.strip().lower()
+
+    return str(raw_action).strip().lower()
