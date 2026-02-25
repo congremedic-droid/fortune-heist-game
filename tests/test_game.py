@@ -2,6 +2,7 @@ import random
 import unittest
 
 from fortune_heist.game import FortuneHeistGame, HeistAction
+from fortune_heist.simulation import simulate_actions
 
 
 class FortuneHeistGameTests(unittest.TestCase):
@@ -45,6 +46,21 @@ class FortuneHeistGameTests(unittest.TestCase):
 
         self.assertTrue(result.lost)
         self.assertIn("ya terminó", result.message)
+
+    def test_simulation_returns_unity_friendly_payload(self):
+        preview = simulate_actions(["scout", "steal", "hide"], seed=7)
+
+        self.assertEqual(preview["seed"], 7)
+        self.assertEqual(len(preview["turns"]), 3)
+        self.assertIn("final", preview)
+        self.assertIn("status_line", preview["final"])
+
+    def test_simulation_maps_invalid_action_to_hide(self):
+        preview = simulate_actions(["invalid"], seed=9)
+
+        first_turn = preview["turns"][0]
+        self.assertFalse(first_turn["valid_input"])
+        self.assertEqual(first_turn["applied_action"], "hide")
 
 
 if __name__ == "__main__":

@@ -1,9 +1,39 @@
 from __future__ import annotations
 
+import argparse
+import json
+
 from .game import FortuneHeistGame, HeistAction
+from .simulation import simulate_actions
 
 
 def run() -> None:
+    parser = argparse.ArgumentParser(description="Fortune Heist Game")
+    parser.add_argument(
+        "--preview-json",
+        action="store_true",
+        help="Genera una vista previa JSON para integrar en Unity.",
+    )
+    parser.add_argument(
+        "--actions",
+        default="scout,steal,hack,steal,hide,steal,steal",
+        help="Lista de acciones separadas por coma usada por --preview-json.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Semilla determinística para --preview-json.",
+    )
+
+    args = parser.parse_args()
+
+    if args.preview_json:
+        actions = [item.strip() for item in args.actions.split(",") if item.strip()]
+        preview = simulate_actions(actions=actions, seed=args.seed)
+        print(json.dumps(preview, indent=2, ensure_ascii=False))
+        return
+
     game = FortuneHeistGame()
     print("=== Fortune Heist Game ===")
     print("Objetivo: consigue $100M sin llegar a alerta máxima.")
