@@ -13,7 +13,14 @@ namespace FortuneHeist.Editor
         private const string SceneFolder = "Assets/Scenes";
         private const string ScenePath = SceneFolder + "/GameScene.unity";
 
+        public static string GameSceneAssetPath => ScenePath;
+
         static SceneSetupEditor()
+        {
+            EnsureGameSceneReady();
+        }
+
+        public static void EnsureGameSceneReady()
         {
             EnsureGameSceneExists();
             EnsureBuildSettingsDefaultScene();
