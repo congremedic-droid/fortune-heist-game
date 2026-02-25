@@ -19,19 +19,31 @@ namespace FortuneHeist
 
         private void Awake()
         {
-            if (buildings.Count == 0)
+            EnsureDefaultBuildings();
+            RefreshUI();
+        }
+
+        private void EnsureDefaultBuildings()
+        {
+            if (buildings.Count > 0)
             {
-                buildings.Add(new BuildingData { Name = "Vault", Level = 1, BaseUpgradeCost = 100, RewardBonus = 10 });
-                buildings.Add(new BuildingData { Name = "Security Hub", Level = 1, BaseUpgradeCost = 120, RewardBonus = 5 });
-                buildings.Add(new BuildingData { Name = "Crypto Lab", Level = 0, BaseUpgradeCost = 140, RewardBonus = 8 });
+                return;
             }
 
-            RefreshUI();
+            buildings.Add(new BuildingData { Name = "Vault", Level = 1, BaseUpgradeCost = 100, RewardBonus = 10 });
+            buildings.Add(new BuildingData { Name = "Security Hub", Level = 1, BaseUpgradeCost = 120, RewardBonus = 5 });
+            buildings.Add(new BuildingData { Name = "Crypto Lab", Level = 0, BaseUpgradeCost = 140, RewardBonus = 8 });
         }
 
         public void AddGold(int amount)
         {
             PlayerGold = Mathf.Max(0, PlayerGold + amount);
+            RefreshUI();
+        }
+
+        public void SetGold(int amount)
+        {
+            PlayerGold = Mathf.Max(0, amount);
             RefreshUI();
         }
 
@@ -86,6 +98,47 @@ namespace FortuneHeist
             }
 
             return string.Join(" | ", lines);
+        }
+
+        public List<BuildingState> ExportBuildingStates()
+        {
+            List<BuildingState> states = new List<BuildingState>();
+            for (int i = 0; i < buildings.Count; i++)
+            {
+                BuildingData source = buildings[i];
+                states.Add(new BuildingState
+                {
+                    Name = source.Name,
+                    Level = source.Level,
+                    BaseUpgradeCost = source.BaseUpgradeCost,
+                    RewardBonus = source.RewardBonus,
+                });
+            }
+
+            return states;
+        }
+
+        public void ImportBuildingStates(List<BuildingState> states)
+        {
+            if (states == null || states.Count == 0)
+            {
+                return;
+            }
+
+            buildings.Clear();
+            for (int i = 0; i < states.Count; i++)
+            {
+                BuildingState state = states[i];
+                buildings.Add(new BuildingData
+                {
+                    Name = state.Name,
+                    Level = state.Level,
+                    BaseUpgradeCost = state.BaseUpgradeCost,
+                    RewardBonus = state.RewardBonus,
+                });
+            }
+
+            RefreshUI();
         }
 
         public void RefreshUI()

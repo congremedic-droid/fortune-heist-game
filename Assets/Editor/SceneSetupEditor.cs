@@ -38,6 +38,7 @@ namespace FortuneHeist.Editor
             systems.AddComponent<FortuneHeist.BuildingSystem>();
             systems.AddComponent<FortuneHeist.AttackSystem>();
             systems.AddComponent<FortuneHeist.WheelSystem>();
+            systems.AddComponent<FortuneHeist.SaveSystem>();
             systems.AddComponent<FortuneHeist.GameplayController>();
             systems.AddComponent<FortuneHeist.DebugMenu>();
 

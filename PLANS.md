@@ -36,13 +36,21 @@
   - Add spins
   - Show building levels
   - Reset building levels
+  - Clear save progress
 
 ## Scene Setup
 - Added editor bootstrap to ensure `Assets/Scenes/GameScene.unity` exists.
 - Build settings auto-set so `GameScene` is the default launch scene.
 
+## Executed Plan (Current Phase)
+- Added persistent local save system (`SaveSystem`) writing JSON to `Application.persistentDataPath`.
+- Added serializable snapshots (`GameStateData`, `BuildingState`, `TargetState`).
+- Connected `GameplayController` to auto-save after spins/target changes and load progress at startup.
+- Added import/export state helpers to `BuildingSystem`, `AttackSystem`, and setters in `WheelSystem`.
+
 ## Next Open Items
-- Persist player/base state between sessions.
-- Replace placeholder buttons/text with production UI prefabs.
-- Add target retaliation and player shield durability.
-- Add balancing pass for wheel probabilities and economy.
+- Replace placeholder UI with production UGUI prefabs + animation transitions.
+- Add daily rewards and FTUE onboarding for first session.
+- Integrate analytics events (spin result, upgrade, attack, rob).
+- Add Android build pipeline (keystore, versioning, CI artifacts).
+- Monetization implementation (Rewarded Ads + IAP) after gameplay KPIs are stable.

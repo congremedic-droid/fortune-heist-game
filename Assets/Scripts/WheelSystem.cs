@@ -27,6 +27,16 @@ namespace FortuneHeist
             spins = Mathf.Max(0, spins + amount);
         }
 
+        public void SetSpins(int value)
+        {
+            spins = Mathf.Max(0, value);
+        }
+
+        public void SetHeistStreak(int value)
+        {
+            HeistStreak = Mathf.Clamp(value, 1, 5);
+        }
+
         public WheelOutcome Spin()
         {
             if (spins <= 0)

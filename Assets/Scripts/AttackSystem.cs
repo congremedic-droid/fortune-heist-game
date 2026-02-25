@@ -10,21 +10,28 @@ namespace FortuneHeist
 
         public IReadOnlyList<TargetBaseData> Targets => targets;
         public TargetBaseData SelectedTarget { get; private set; }
+        public int SelectedTargetIndex => SelectedTarget == null ? -1 : targets.IndexOf(SelectedTarget);
 
         private void Awake()
         {
-            if (targets.Count == 0)
-            {
-                targets.Add(CreateTarget("Harbor Crew", 2, 300, false));
-                targets.Add(CreateTarget("Neon Syndicate", 4, 550, true));
-                targets.Add(CreateTarget("Vault Runners", 3, 420, false));
-                targets.Add(CreateTarget("Quantum Foxes", 5, 700, false));
-            }
-
+            EnsureDefaultTargets();
             if (SelectedTarget == null && targets.Count > 0)
             {
                 SelectedTarget = targets[0];
             }
+        }
+
+        private void EnsureDefaultTargets()
+        {
+            if (targets.Count > 0)
+            {
+                return;
+            }
+
+            targets.Add(CreateTarget("Harbor Crew", 2, 300, false));
+            targets.Add(CreateTarget("Neon Syndicate", 4, 550, true));
+            targets.Add(CreateTarget("Vault Runners", 3, 420, false));
+            targets.Add(CreateTarget("Quantum Foxes", 5, 700, false));
         }
 
         public void SelectTarget(int index)
@@ -83,6 +90,84 @@ namespace FortuneHeist
 
             target.GoldPool = Mathf.Max(0, target.GoldPool - finalStolen);
             return finalStolen;
+        }
+
+        public List<TargetState> ExportTargetStates()
+        {
+            List<TargetState> states = new List<TargetState>();
+            for (int i = 0; i < targets.Count; i++)
+            {
+                TargetBaseData source = targets[i];
+                TargetState state = new TargetState
+                {
+                    Name = source.Name,
+                    BaseLevel = source.BaseLevel,
+                    GoldPool = source.GoldPool,
+                    HasShield = source.HasShield,
+                    Buildings = new List<BuildingState>()
+                };
+
+                for (int b = 0; b < source.Buildings.Count; b++)
+                {
+                    BuildingData building = source.Buildings[b];
+                    state.Buildings.Add(new BuildingState
+                    {
+                        Name = building.Name,
+                        Level = building.Level,
+                        BaseUpgradeCost = building.BaseUpgradeCost,
+                        RewardBonus = building.RewardBonus,
+                    });
+                }
+
+                states.Add(state);
+            }
+
+            return states;
+        }
+
+        public void ImportTargetStates(List<TargetState> states, int selectedIndex)
+        {
+            if (states == null || states.Count == 0)
+            {
+                return;
+            }
+
+            targets.Clear();
+            for (int i = 0; i < states.Count; i++)
+            {
+                TargetState source = states[i];
+                TargetBaseData target = new TargetBaseData
+                {
+                    Name = source.Name,
+                    BaseLevel = source.BaseLevel,
+                    GoldPool = source.GoldPool,
+                    HasShield = source.HasShield,
+                    Buildings = new List<BuildingData>()
+                };
+
+                for (int b = 0; b < source.Buildings.Count; b++)
+                {
+                    BuildingState building = source.Buildings[b];
+                    target.Buildings.Add(new BuildingData
+                    {
+                        Name = building.Name,
+                        Level = building.Level,
+                        BaseUpgradeCost = building.BaseUpgradeCost,
+                        RewardBonus = building.RewardBonus,
+                    });
+                }
+
+                targets.Add(target);
+            }
+
+            if (selectedIndex >= 0 && selectedIndex < targets.Count)
+            {
+                SelectedTarget = targets[selectedIndex];
+            }
+            else
+            {
+                SelectedTarget = targets.Count > 0 ? targets[0] : null;
+            }
         }
 
         private TargetBaseData CreateTarget(string name, int baseLevel, int gold, bool hasShield)

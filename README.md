@@ -21,6 +21,12 @@ La carpeta correcta debe contener al menos:
    - `%LOCALAPPDATA%\Unity\Editor\Editor.log`
    - busca las últimas líneas con `error` o `exception`.
 
+## Novedad: progreso persistente (Unity)
+- El juego ahora guarda estado local automáticamente tras spin y cambio de target.
+- Archivo guardado en `Application.persistentDataPath/fortune_heist_save.json`.
+- Incluye oro, spins, heist streak, edificios del jugador y objetivos NPC.
+- Desde `DebugMenu` puedes limpiar progreso con `ClearProgress`.
+
 ## Python (rápido)
 ### Requisitos
 - Python 3.10+
@@ -45,6 +51,7 @@ python -m unittest discover -s tests -p 'test_*.py'
   - `BuildingSystem.cs`
   - `AttackSystem.cs`
   - `WheelSystem.cs`
+  - `SaveSystem.cs`
   - `GameplayController.cs`
   - `DebugMenu.cs`
 - Setup editor en `Assets/Editor/SceneSetupEditor.cs` para garantizar `GameScene` y Build Settings por defecto.

@@ -9,6 +9,7 @@ namespace FortuneHeist
         [SerializeField] private BuildingSystem buildingSystem;
         [SerializeField] private AttackSystem attackSystem;
         [SerializeField] private WheelSystem wheelSystem;
+        [SerializeField] private SaveSystem saveSystem;
 
         [Header("UI")]
         [SerializeField] private Text resultText;
@@ -21,7 +22,9 @@ namespace FortuneHeist
             if (buildingSystem == null) buildingSystem = FindObjectOfType<BuildingSystem>();
             if (attackSystem == null) attackSystem = FindObjectOfType<AttackSystem>();
             if (wheelSystem == null) wheelSystem = FindObjectOfType<WheelSystem>();
+            if (saveSystem == null) saveSystem = FindObjectOfType<SaveSystem>();
 
+            LoadProgress();
             BuildTargetUI();
             RefreshUiCounters();
         }
@@ -57,7 +60,7 @@ namespace FortuneHeist
                     SetResult($"Rob success on {target?.Name}! Stole {goldDelta} gold with streak x{wheelSystem.HeistStreak}.");
                     break;
                 case WheelOutcome.Shield:
-                    SetResult("Shield outcome. Next incoming attack can be blocked (placeholder logic). ");
+                    SetResult("Shield outcome. Next incoming attack can be blocked (placeholder logic).");
                     break;
                 default:
                     SetResult("No spins available.");
@@ -66,12 +69,56 @@ namespace FortuneHeist
 
             RefreshUiCounters();
             BuildTargetUI();
+            SaveProgress();
         }
 
         public void SelectTarget(int index)
         {
             attackSystem.SelectTarget(index);
             BuildTargetUI();
+            SaveProgress();
+        }
+
+        public void SaveProgress()
+        {
+            if (saveSystem == null || buildingSystem == null || wheelSystem == null || attackSystem == null)
+            {
+                return;
+            }
+
+            GameStateData state = new GameStateData
+            {
+                PlayerGold = buildingSystem.PlayerGold,
+                Spins = wheelSystem.Spins,
+                HeistStreak = wheelSystem.HeistStreak,
+                SelectedTargetIndex = attackSystem.SelectedTargetIndex,
+                PlayerBuildings = buildingSystem.ExportBuildingStates(),
+                Targets = attackSystem.ExportTargetStates(),
+            };
+
+            saveSystem.Save(state);
+        }
+
+        public void LoadProgress()
+        {
+            if (saveSystem == null || !saveSystem.HasSave())
+            {
+                return;
+            }
+
+            GameStateData state = saveSystem.Load();
+            if (state == null)
+            {
+                return;
+            }
+
+            buildingSystem.SetGold(state.PlayerGold);
+            buildingSystem.ImportBuildingStates(state.PlayerBuildings);
+            wheelSystem.SetSpins(state.Spins);
+            wheelSystem.SetHeistStreak(state.HeistStreak);
+            attackSystem.ImportTargetStates(state.Targets, state.SelectedTargetIndex);
+
+            SetResult($"Progress loaded (save unix: {state.LastSaveUnix}).");
         }
 
         private void BuildTargetUI()
