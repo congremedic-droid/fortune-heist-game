@@ -21,6 +21,12 @@ La carpeta correcta debe contener al menos:
    - `%LOCALAPPDATA%\Unity\Editor\Editor.log`
    - busca las últimas líneas con `error` o `exception`.
 
+## Premium visual pass (nuevo)
+- Tema visual configurable por JSON en `Assets/StreamingAssets/theme_config.json`.
+- `ThemeConfigService` carga el tema y lo aplica en runtime vía `GameplayHudPresenter.ApplyTheme(...)`.
+- `UIFeedbackAnimator` soporta pulso configurable de resultado para mejorar percepción de recompensa.
+- Guía de arte disponible en `ART_DIRECTION.md`.
+
 ## Roadmap implementado (primeros 4 pasos)
 - **UI feedback mejorado:** `GameplayHudPresenter` + `UIFeedbackAnimator`.
 - **FTUE visual y gating:** `FtueOverlayPresenter` + bloqueo de acciones por paso.

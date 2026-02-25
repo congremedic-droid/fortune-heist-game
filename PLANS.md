@@ -38,6 +38,11 @@
 - Added `RemoteConfigService` loading `StreamingAssets/remote_balance.json`.
 - Wheel/attack/rob/building costs now read runtime config values from `BalanceConfigData`.
 
+## Premium Visual Pass (current)
+- Added `ThemeConfigService` and `ThemeConfigData` to load runtime UI theme from `StreamingAssets/theme_config.json`.
+- Integrated theme application in `GameplayController -> GameplayHudPresenter.ApplyTheme(...)`.
+- Added `ART_DIRECTION.md` as production art style guide and asset pipeline baseline.
+
 ## Next Open Items
 - Bind production prefabs in `GameScene` (HUD text, FTUE overlay and result animator references).
 - Replace `UnityBackendPlaceholder` analytics provider with Firebase/Unity Analytics SDK.

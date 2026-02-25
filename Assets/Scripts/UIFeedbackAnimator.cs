@@ -10,6 +10,11 @@ namespace FortuneHeist
 
         private Coroutine pulseRoutine;
 
+        public void SetPulseDuration(float value)
+        {
+            pulseDuration = Mathf.Clamp(value, 0.08f, 1.25f);
+        }
+
         public void PlayPulse()
         {
             if (targetGroup == null)

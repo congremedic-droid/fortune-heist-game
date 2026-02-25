@@ -11,10 +11,35 @@ namespace FortuneHeist
         [SerializeField] private Text ftueText;
         [SerializeField] private Text dailyRewardText;
         [SerializeField] private Text resultText;
+        [SerializeField] private Image accentBar;
+
         [SerializeField] private Color positiveColor = new Color(0.35f, 1f, 0.45f);
         [SerializeField] private Color neutralColor = Color.white;
         [SerializeField] private Color warningColor = new Color(1f, 0.6f, 0.3f);
+
         [SerializeField] private UIFeedbackAnimator resultAnimator;
+
+        public void ApplyTheme(ThemeConfigData data)
+        {
+            if (data == null)
+            {
+                return;
+            }
+
+            positiveColor = ParseColor(data.PositiveHex, positiveColor);
+            neutralColor = ParseColor(data.NeutralHex, neutralColor);
+            warningColor = ParseColor(data.WarningHex, warningColor);
+
+            if (accentBar != null)
+            {
+                accentBar.color = ParseColor(data.AccentHex, accentBar.color);
+            }
+
+            if (resultAnimator != null)
+            {
+                resultAnimator.SetPulseDuration(data.ResultPulseDuration);
+            }
+        }
 
         public void Refresh(int gold, int spins, int heistStreak, string selectedTarget, string ftueInstruction, int dailyStreak)
         {
@@ -43,6 +68,16 @@ namespace FortuneHeist
             }
 
             resultAnimator?.PlayPulse();
+        }
+
+        private Color ParseColor(string hex, Color fallback)
+        {
+            if (string.IsNullOrWhiteSpace(hex))
+            {
+                return fallback;
+            }
+
+            return ColorUtility.TryParseHtmlString(hex, out Color parsed) ? parsed : fallback;
         }
     }
 }

@@ -14,6 +14,7 @@ namespace FortuneHeist
         [SerializeField] private FtueSystem ftueSystem;
         [SerializeField] private FtueOverlayPresenter ftueOverlayPresenter;
         [SerializeField] private DailyRewardSystem dailyRewardSystem;
+        [SerializeField] private ThemeConfigService themeConfigService;
         [SerializeField] private AnalyticsSystem analyticsSystem;
         [SerializeField] private GameplayHudPresenter hudPresenter;
 
@@ -32,10 +33,16 @@ namespace FortuneHeist
             if (ftueSystem == null) ftueSystem = FindObjectOfType<FtueSystem>();
             if (ftueOverlayPresenter == null) ftueOverlayPresenter = FindObjectOfType<FtueOverlayPresenter>();
             if (dailyRewardSystem == null) dailyRewardSystem = FindObjectOfType<DailyRewardSystem>();
+            if (themeConfigService == null) themeConfigService = FindObjectOfType<ThemeConfigService>();
             if (analyticsSystem == null) analyticsSystem = FindObjectOfType<AnalyticsSystem>();
             if (hudPresenter == null) hudPresenter = FindObjectOfType<GameplayHudPresenter>();
 
             buildingSystem.OnBuildingUpgraded += HandleBuildingUpgraded;
+            if (themeConfigService != null)
+            {
+                themeConfigService.OnThemeUpdated += HandleThemeUpdated;
+                hudPresenter?.ApplyTheme(themeConfigService.CurrentTheme);
+            }
 
             LoadProgress();
             TryClaimDailyRewardOnStart();
@@ -49,6 +56,11 @@ namespace FortuneHeist
             if (buildingSystem != null)
             {
                 buildingSystem.OnBuildingUpgraded -= HandleBuildingUpgraded;
+            }
+
+            if (themeConfigService != null)
+            {
+                themeConfigService.OnThemeUpdated -= HandleThemeUpdated;
             }
         }
 
@@ -205,6 +217,12 @@ namespace FortuneHeist
                 });
                 SaveProgress();
             }
+        }
+
+        private void HandleThemeUpdated(ThemeConfigData data)
+        {
+            hudPresenter?.ApplyTheme(data);
+            RefreshUiCounters();
         }
 
         private void HandleBuildingUpgraded(BuildingData building, int cost)
